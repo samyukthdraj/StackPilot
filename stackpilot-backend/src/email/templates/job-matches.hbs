@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .content {
+        padding: 20px;
+        background: #f9f9f9;
+      }
+      .job-card {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+        border-left: 4px solid #667eea;
+      }
+      .badge {
+        background: #667eea;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🎯 Your Top Job Matches</h1>
+      </div>
+      <div class='content'>
+        <h2>Hi {{name}},</h2>
+        <p>Here are your top
+          {{matches.length}}
+          job matches based on your resume:</p>
+
+        {{#each matches}}
+          <div class='job-card'>
+            <h3 style='margin: 0 0 5px 0;'>{{this.title}}</h3>
+            <p style='margin: 0 0 10px 0; color: #666;'>{{this.company}}
+              •
+              {{this.location}}</p>
+            <div style='margin-bottom: 10px;'>
+              <span class='badge'>Match Score: {{this.score}}%</span>
+            </div>
+            <p><strong>Matched Skills:</strong> {{this.matchedSkills}}</p>
+            {{#if this.missingSkills}}
+              <p><strong>Missing Skills:</strong> {{this.missingSkills}}</p>
+            {{/if}}
+            <a
+              href='{{this.url}}'
+              style='color: #667eea; text-decoration: none;'
+            >View Job →</a>
+          </div>
+        {{/each}}
+
+        <a
+          href='{{dashboardUrl}}'
+          style='display: block; text-align: center; padding: 10px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;'
+        >View All Matches</a>
+      </div>
+    </div>
+  </body>
+</html>
