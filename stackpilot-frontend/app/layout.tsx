@@ -30,6 +30,11 @@ export const metadata: Metadata = {
   title: "StackPilot - Career Intelligence for Developers",
   description:
     "Optimize your resume, find perfect job matches, and accelerate your developer career.",
+  icons: {
+    icon: "/images/stackpilot_navicon2.png",
+    shortcut: "/images/stackpilot_navicon2.png",
+    apple: "/images/stackpilot_navicon2.png",
+  },
   openGraph: {
     title: "StackPilot",
     description: "Career Intelligence for Modern Developers",
