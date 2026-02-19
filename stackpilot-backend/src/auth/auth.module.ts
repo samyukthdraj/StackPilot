@@ -18,7 +18,7 @@ import { User } from '../users/user.entity';
         secret:
           configService.get<string>('JWT_SECRET') || 'super-secret-jwt-key',
         signOptions: {
-          expiresIn: '7d',
+          expiresIn: '24h',
         },
       }),
     }),

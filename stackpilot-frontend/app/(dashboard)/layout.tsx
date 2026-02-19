@@ -41,7 +41,6 @@ export default function DashboardLayout({
   }
 
   if (!isAuthenticated) {
-    router.replace("/login");
     return null;
   }
 

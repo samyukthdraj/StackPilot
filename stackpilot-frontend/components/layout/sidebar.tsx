@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Home, FileText, Briefcase, Target, User, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -16,7 +16,20 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (pathname === "/dashboard") {
+      // If already on dashboard, scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // Navigate to dashboard
+      router.push("/dashboard");
+    }
+  };
 
   return (
     <>
@@ -48,15 +61,18 @@ export function Sidebar() {
         `}
       >
         <div className="p-2 lg:px-6 lg:py-2 border-b">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <button
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 cursor-pointer transform hover:scale-105 transition-transform duration-300"
+          >
             <Image
-              src="/images/stackpilot_logo.svg"
+              src="/images/stackpilot_logo_bg_removed_upscaled.png"
               alt="StackPilot"
               width={160}
               height={40}
               className="h-52 lg:h-28 w-auto"
             />
-          </Link>
+          </button>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {

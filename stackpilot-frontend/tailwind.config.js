@@ -11,7 +11,18 @@ const config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"aeonikPro"', '"aeonikPro Fallback"', "serif"],
+        "aeonik-pro": ['"aeonikPro"', '"aeonikPro Fallback"', "serif"],
+        mono: ['"socialMono"', '"socialMono Fallback"', "sans-serif"],
+      },
+      fontSize: {
+        12: "0.75rem", // 12px
+        14: "0.875rem", // 14px
+        36: "2.25rem", // 36px
+      },
       colors: {
+        brown: "#8B4513",
         navy: {
           DEFAULT: "#0A1929",
           light: "#1E2F47",

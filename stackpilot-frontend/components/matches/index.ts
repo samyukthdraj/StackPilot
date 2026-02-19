@@ -5,3 +5,4 @@ export { MatchCard } from "./match-card";
 export { MatchFilters } from "./match-filters";
 export { MatchStats } from "./match-stats";
 export { LearningRecommendations } from "./learning-recommendations";
+export { MatchesContainer } from "./matches-container";

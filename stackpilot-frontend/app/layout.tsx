@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, Calistoga, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "./premium.css";
+import "./premium-theme.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { PremiumThemeProvider } from "@/components/providers/premium-theme-provider";
+import { PageTransition } from "@/components/shared/page-transition";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
@@ -46,14 +50,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${calSans.variable} ${jetbrainsMono.variable} font-sans`}
+        className={`${inter.variable} ${calSans.variable} ${jetbrainsMono.variable} font-sans premium-theme`}
       >
-        <ThemeProvider>
-          <QueryProvider>
-            {children}
-            <Toaster />
-          </QueryProvider>
-        </ThemeProvider>
+        <PageTransition />
+        <PremiumThemeProvider>
+          <ThemeProvider>
+            <QueryProvider>
+              {children}
+              <Toaster />
+            </QueryProvider>
+          </ThemeProvider>
+        </PremiumThemeProvider>
       </body>
     </html>
   );

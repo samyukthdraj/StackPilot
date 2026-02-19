@@ -1,0 +1,255 @@
+/* Global Premium Theme - Applies to ALL pages */
+
+.premium-theme {
+  --background: #0d0d0d;
+  --foreground: #f5f0e8;
+  --card: #1a1a1a;
+  --card-foreground: #f5f0e8;
+  --popover: #1a1a1a;
+  --popover-foreground: #f5f0e8;
+  --primary: #f5c842;
+  --primary-foreground: #0d0d0d;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #f5f0e8;
+  --muted: #2a2a2a;
+  --muted-foreground: #a0a0a0;
+  --accent: #f5c842;
+  --accent-foreground: #0d0d0d;
+  --destructive: #ef4444;
+  --destructive-foreground: #f5f0e8;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #f5c842;
+
+  background: #0d0d0d;
+  color: #f5f0e8;
+  font-family: "Inter", sans-serif;
+}
+
+/* Override Tailwind colors */
+.premium-theme .bg-white {
+  background-color: #0d0d0d !important;
+}
+
+.premium-theme .bg-gray-50 {
+  background-color: #1a1a1a !important;
+}
+
+.premium-theme .bg-gray-100 {
+  background-color: #2a2a2a !important;
+}
+
+.premium-theme .text-gray-900 {
+  color: #f5f0e8 !important;
+}
+
+.premium-theme .text-gray-600 {
+  color: #a0a0a0 !important;
+}
+
+.premium-theme .border-gray-200 {
+  border-color: #2a2a2a !important;
+}
+
+/* Cards */
+.premium-theme .card,
+.premium-theme [class*="Card"] {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+  color: #f5f0e8;
+}
+
+/* Buttons */
+.premium-theme button,
+.premium-theme .btn {
+  transition: all 0.3s ease;
+}
+
+.premium-theme button:hover,
+.premium-theme .btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Inputs */
+.premium-theme input,
+.premium-theme textarea,
+.premium-theme select {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+  color: #f5f0e8;
+}
+
+.premium-theme input::placeholder,
+.premium-theme textarea::placeholder {
+  color: #666;
+}
+
+.premium-theme input:focus,
+.premium-theme textarea:focus,
+.premium-theme select:focus {
+  border-color: #f5c842;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(245, 196, 66, 0.1);
+}
+
+/* Links */
+.premium-theme a {
+  color: #f5c842;
+  transition: opacity 0.2s ease;
+}
+
+.premium-theme a:hover {
+  opacity: 0.8;
+}
+
+/* Headings */
+.premium-theme h1,
+.premium-theme h2,
+.premium-theme h3,
+.premium-theme h4,
+.premium-theme h5,
+.premium-theme h6 {
+  color: #f5f0e8;
+  font-family: "Playfair Display", serif;
+}
+
+/* Smooth animations */
+.premium-theme * {
+  transition-property:
+    background-color, border-color, color, fill, stroke, opacity, box-shadow,
+    transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Scrollbar */
+.premium-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.premium-theme ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.premium-theme ::-webkit-scrollbar-thumb {
+  background: #f5c842;
+  border-radius: 5px;
+}
+
+.premium-theme ::-webkit-scrollbar-thumb:hover {
+  background: #f5d062;
+}
+
+/* Tables */
+.premium-theme table {
+  border-color: #2a2a2a;
+}
+
+.premium-theme th {
+  background: #1a1a1a;
+  color: #f5f0e8;
+}
+
+.premium-theme td {
+  border-color: #2a2a2a;
+}
+
+.premium-theme tr:hover {
+  background: #1a1a1a;
+}
+
+/* Modals/Dialogs */
+.premium-theme [role="dialog"],
+.premium-theme .modal {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+/* Dropdowns */
+.premium-theme [role="menu"],
+.premium-theme .dropdown {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+/* Tooltips */
+.premium-theme [role="tooltip"],
+.premium-theme .tooltip {
+  background: #1a1a1a;
+  color: #f5f0e8;
+  border-color: #2a2a2a;
+}
+
+/* Badges */
+.premium-theme .badge {
+  background: #f5c842;
+  color: #0d0d0d;
+}
+
+/* Progress bars */
+.premium-theme .progress {
+  background: #2a2a2a;
+}
+
+.premium-theme .progress-bar {
+  background: #f5c842;
+}
+
+/* Alerts */
+.premium-theme .alert {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+  color: #f5f0e8;
+}
+
+/* Code blocks */
+.premium-theme code,
+.premium-theme pre {
+  background: #1a1a1a;
+  color: #f5c842;
+  border-color: #2a2a2a;
+}
+
+/* Smooth Page Transitions */
+body {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Link transitions */
+.premium-theme a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Route change animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.premium-theme main {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body,
+  .premium-theme main {
+    animation: none !important;
+    transition: none !important;
+  }
+}
