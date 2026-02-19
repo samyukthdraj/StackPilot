@@ -196,6 +196,17 @@ html {
   color: var(--color-accent);
 }
 
+.premium-btn-outline {
+  background: transparent;
+  color: var(--color-light);
+  border: 2px solid var(--color-light);
+}
+
+.premium-btn-outline:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
 /* Sections */
 .premium-section-dark {
   background: var(--color-dark);
@@ -284,6 +295,17 @@ html {
 
 .premium-navbar.scrolled .premium-btn-light:hover {
   background: #1a1a1a;
+}
+
+.premium-navbar.scrolled .premium-btn-outline {
+  background: transparent;
+  color: var(--color-dark);
+  border-color: var(--color-dark);
+}
+
+.premium-navbar.scrolled .premium-btn-outline:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 /* Hero */

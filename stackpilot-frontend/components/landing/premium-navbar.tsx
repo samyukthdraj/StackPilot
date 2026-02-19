@@ -125,9 +125,15 @@ export function PremiumNavbar({
         </a>
         <button
           onClick={onRegisterClick}
-          className="premium-btn-pill premium-btn-light magnetic-btn"
+          className="premium-btn-pill premium-btn-outline magnetic-btn"
         >
           Get Started
+        </button>
+        <button
+          onClick={onLoginClick}
+          className="premium-btn-pill premium-btn-light magnetic-btn"
+        >
+          Login
         </button>
       </div>
     </nav>

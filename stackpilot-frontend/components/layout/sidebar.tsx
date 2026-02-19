@@ -69,7 +69,7 @@ export function Sidebar() {
                 fontFamily: "'Playfair Display', serif",
                 fontSize: "28px",
                 fontWeight: 900,
-                color: "#0d0d0d",
+                color: "#F5F0E8",
               }}
             >
               StackPilot

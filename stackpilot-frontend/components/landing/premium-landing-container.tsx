@@ -59,10 +59,51 @@ export function PremiumLandingContainer() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loginForm = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
+  const loginForm = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
   const registerForm = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
+
+  // Clear forms when modals are opened
+  useEffect(() => {
+    if (showLogin) {
+      // Use setTimeout to ensure form is cleared after browser autofill
+      setTimeout(() => {
+        loginForm.reset({
+          email: "",
+          password: "",
+        });
+      }, 0);
+      setError(null);
+    }
+  }, [showLogin, loginForm]);
+
+  useEffect(() => {
+    if (showRegister) {
+      // Use setTimeout to ensure form is cleared after browser autofill
+      setTimeout(() => {
+        registerForm.reset({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }, 0);
+      setError(null);
+    }
+  }, [showRegister, registerForm]);
 
   useEffect(() => {
     const token =
@@ -221,7 +262,10 @@ export function PremiumLandingContainer() {
                   Enter your credentials to access your account
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={loginForm.handleSubmit(handleLogin)}>
+              <form
+                onSubmit={loginForm.handleSubmit(handleLogin)}
+                autoComplete="new-password"
+              >
                 <CardContent className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
@@ -232,10 +276,11 @@ export function PremiumLandingContainer() {
                     <label className="text-sm font-medium">Email</label>
                     <Input
                       {...loginForm.register("email")}
-                      type="email"
+                      type="text"
                       placeholder="you@example.com"
                       className="cursor-text"
-                      autoComplete="off"
+                      autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.email && (
@@ -251,7 +296,8 @@ export function PremiumLandingContainer() {
                       type="password"
                       placeholder="••••••••"
                       className="cursor-text"
-                      autoComplete="off"
+                      autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.password && (
@@ -342,7 +388,10 @@ export function PremiumLandingContainer() {
                   Enter your details to get started with StackPilot
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={registerForm.handleSubmit(handleRegister)}>
+              <form
+                onSubmit={registerForm.handleSubmit(handleRegister)}
+                autoComplete="new-password"
+              >
                 <CardContent className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
@@ -353,9 +402,11 @@ export function PremiumLandingContainer() {
                     <label className="text-sm font-medium">Full Name</label>
                     <Input
                       {...registerForm.register("name")}
+                      type="text"
                       placeholder="John Doe"
                       className="cursor-text"
-                      autoComplete="off"
+                      autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.name && (
@@ -368,10 +419,11 @@ export function PremiumLandingContainer() {
                     <label className="text-sm font-medium">Email</label>
                     <Input
                       {...registerForm.register("email")}
-                      type="email"
+                      type="text"
                       placeholder="you@example.com"
                       className="cursor-text"
-                      autoComplete="off"
+                      autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.email && (
@@ -388,6 +440,7 @@ export function PremiumLandingContainer() {
                       placeholder="••••••••"
                       className="cursor-text"
                       autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.password && (
@@ -406,6 +459,7 @@ export function PremiumLandingContainer() {
                       placeholder="••••••••"
                       className="cursor-text"
                       autoComplete="new-password"
+                      data-form-type="other"
                       onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.confirmPassword && (
