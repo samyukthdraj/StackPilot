@@ -74,7 +74,7 @@ export function PremiumCursor() {
 
     const updateHoverElements = () => {
       const hoverElements = document.querySelectorAll(
-        "a, button, .tab-item, .tilt-card, input, textarea, select, [role='button'], .metric-card",
+        "a, button, .tab-item, .tilt-card, input, textarea, select, [role='button'], .metric-card, .interactive-orb",
       );
       hoverElements.forEach((el) => {
         el.addEventListener("mouseenter", handleMouseEnter);

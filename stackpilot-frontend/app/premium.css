@@ -81,8 +81,8 @@ html {
 }
 
 .premium-cursor.dark-mode.hover {
-  border-color: #0d0d0d;
-  box-shadow: 0 0 20px rgba(13, 13, 13, 0.3);
+  border-color: #f5c842;
+  box-shadow: 0 0 20px rgba(245, 196, 66, 0.3);
 }
 
 .premium-cursor-ring.hover {
@@ -94,8 +94,8 @@ html {
 }
 
 .premium-cursor-ring.dark-mode.hover {
-  border-color: #0d0d0d;
-  box-shadow: 0 0 20px rgba(13, 13, 13, 0.2);
+  border-color: #f5c842;
+  box-shadow: 0 0 20px rgba(245, 196, 66, 0.2);
 }
 
 .cursor-pointer-icon {
@@ -106,7 +106,7 @@ html {
 }
 
 .premium-cursor.dark-mode .cursor-pointer-icon {
-  color: #0d0d0d;
+  color: #f5c842;
 }
 
 @keyframes pointerPulse {
@@ -183,9 +183,17 @@ html {
   color: var(--color-light);
 }
 
+.premium-btn-dark:hover {
+  color: var(--color-accent);
+}
+
 .premium-btn-light {
   background: var(--color-light);
   color: var(--color-dark);
+}
+
+.premium-btn-light:hover {
+  color: var(--color-accent);
 }
 
 /* Sections */
@@ -324,7 +332,7 @@ html {
   width: 200px;
   height: 200px;
   will-change: transform;
-  cursor: none !important;
+  cursor: pointer !important;
 }
 
 .orb-inner {
@@ -341,11 +349,16 @@ html {
     0 0 60px rgba(245, 196, 66, 0.6),
     0 0 120px rgba(245, 196, 66, 0.3);
   animation: orbFloat 4s ease-in-out infinite;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .interactive-orb:hover .orb-inner {
   transform: scale(1.1);
+  background: radial-gradient(
+    circle at 30% 30%,
+    #f5c842,
+    rgba(245, 196, 66, 0.5)
+  );
   box-shadow:
     0 0 80px rgba(245, 196, 66, 0.8),
     0 0 160px rgba(245, 196, 66, 0.4);

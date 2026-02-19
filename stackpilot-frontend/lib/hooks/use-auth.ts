@@ -78,7 +78,7 @@ export function useAuth() {
     localStorage.removeItem("user");
     localStorage.removeItem("login_timestamp");
     setUser(null);
-    router.push("/login");
+    router.push("/");
   };
 
   return {

@@ -1,6 +1,14 @@
 "use client";
 
 export function PremiumFooter() {
+  const handleFeaturesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const featuresSection = document.getElementById("features");
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <footer
       className="premium-section-dark"
@@ -16,7 +24,9 @@ export function PremiumFooter() {
 
         <div className="premium-footer-links">
           <div className="premium-label-small premium-mb-40">PRODUCT</div>
-          <a href="#">Features</a>
+          <a href="#features" onClick={handleFeaturesClick}>
+            Features
+          </a>
           <a href="#">Pricing</a>
           <a href="#">FAQ</a>
         </div>

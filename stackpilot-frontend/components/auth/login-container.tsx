@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -129,14 +128,16 @@ export function LoginContainer() {
         <CardHeader className="space-y-4 pb-8">
           <div className="flex justify-center mb-2">
             <Link href="/">
-              <Image
-                src="/images/stackpilot_logo_bg_removed_upscaled.png"
-                alt="StackPilot"
-                width={160}
-                height={160}
-                className="h-10 w-auto"
-                priority
-              />
+              <div
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: "32px",
+                  fontWeight: 900,
+                  color: "#f5f0e8",
+                }}
+              >
+                StackPilot
+              </div>
             </Link>
           </div>
           <CardTitle className="text-2xl text-center">Welcome back</CardTitle>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
 import { Home, FileText, Briefcase, Target, User, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -65,13 +64,16 @@ export function Sidebar() {
             onClick={handleLogoClick}
             className="flex items-center gap-2 cursor-pointer transform hover:scale-105 transition-transform duration-300"
           >
-            <Image
-              src="/images/stackpilot_logo_bg_removed_upscaled.png"
-              alt="StackPilot"
-              width={160}
-              height={40}
-              className="h-52 lg:h-28 w-auto"
-            />
+            <div
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "28px",
+                fontWeight: 900,
+                color: "#0d0d0d",
+              }}
+            >
+              StackPilot
+            </div>
           </button>
         </div>
         <nav className="flex-1 p-4 space-y-1">

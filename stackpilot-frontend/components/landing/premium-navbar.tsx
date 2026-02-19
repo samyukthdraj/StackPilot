@@ -97,11 +97,32 @@ export function PremiumNavbar({
     return () => clearInterval(checkGSAP);
   }, []);
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleFeaturesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const featuresSection = document.getElementById("features");
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <nav ref={navbarRef} className="premium-navbar">
-      <div className="premium-logo">StackPilot</div>
+      <div
+        className="premium-logo"
+        onClick={handleLogoClick}
+        style={{ cursor: "pointer" }}
+      >
+        StackPilot
+      </div>
       <div className="premium-nav-links">
-        <a href="#features">Features</a>
+        <a href="#features" onClick={handleFeaturesClick}>
+          Features
+        </a>
         <button
           onClick={onRegisterClick}
           className="premium-btn-pill premium-btn-light magnetic-btn"

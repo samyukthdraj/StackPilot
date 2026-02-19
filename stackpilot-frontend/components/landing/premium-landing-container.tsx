@@ -25,7 +25,6 @@ import { PremiumStats } from "./premium-stats";
 import { PremiumHowItWorks } from "./premium-how-it-works";
 import { PremiumCTA } from "./premium-cta";
 import { PremiumFooter } from "./premium-footer";
-import Image from "next/image";
 
 const loginSchema = z.object({
   email: z
@@ -105,6 +104,7 @@ export function PremiumLandingContainer() {
       const { access_token } = await response.json();
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("token", access_token);
+      localStorage.setItem("login_timestamp", Date.now().toString());
 
       const profileResponse = await fetch(`${apiUrl}/auth/profile`, {
         headers: { Authorization: `Bearer ${access_token}` },
@@ -203,13 +203,16 @@ export function PremiumLandingContainer() {
               </button>
               <CardHeader className="space-y-4 pb-8">
                 <div className="flex justify-center mb-2">
-                  <Image
-                    src="/images/stackpilot_logo_bg_removed_upscaled.png"
-                    alt="StackPilot"
-                    width={160}
-                    height={160}
-                    className="h-10 w-auto"
-                  />
+                  <div
+                    className="premium-logo"
+                    style={{
+                      fontSize: "32px",
+                      fontWeight: 900,
+                      color: "#f5f0e8",
+                    }}
+                  >
+                    StackPilot
+                  </div>
                 </div>
                 <CardTitle className="text-2xl text-center">
                   Welcome back
@@ -321,13 +324,16 @@ export function PremiumLandingContainer() {
               </button>
               <CardHeader className="space-y-4 pb-8">
                 <div className="flex justify-center mb-2">
-                  <Image
-                    src="/images/stackpilot_logo_bg_removed_upscaled.png"
-                    alt="StackPilot"
-                    width={160}
-                    height={160}
-                    className="h-10 w-auto"
-                  />
+                  <div
+                    className="premium-logo"
+                    style={{
+                      fontSize: "32px",
+                      fontWeight: 900,
+                      color: "#f5f0e8",
+                    }}
+                  >
+                    StackPilot
+                  </div>
                 </div>
                 <CardTitle className="text-2xl text-center">
                   Create an account
