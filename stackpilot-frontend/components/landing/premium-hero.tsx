@@ -40,15 +40,6 @@ export function PremiumHero({ onGetStarted, onWatchDemo }: PremiumHeroProps) {
           delay: 0.3,
         },
       );
-
-      // Floating card animation
-      gsap.to(".floating-card", {
-        y: -8,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "power1.inOut",
-      });
     };
 
     const checkGSAP = setInterval(() => {
@@ -90,21 +81,9 @@ export function PremiumHero({ onGetStarted, onWatchDemo }: PremiumHeroProps) {
         </div>
       </div>
 
-      <div className="floating-card">
-        <div className="premium-label-small" style={{ marginBottom: "20px" }}>
-          LIVE STATS
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "48px",
-            fontWeight: 900,
-          }}
-        >
-          1,247
-        </div>
-        <div style={{ fontSize: "14px", opacity: 0.7, marginTop: "10px" }}>
-          Developers Hired This Month
+      <div className="interactive-orb">
+        <div className="orb-inner">
+          <div className="orb-pulse"></div>
         </div>
       </div>
     </section>

@@ -8,6 +8,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { PremiumThemeProvider } from "@/components/providers/premium-theme-provider";
 import { PageTransition } from "@/components/shared/page-transition";
 import { Toaster } from "@/components/ui/toaster";
+import { GlobalPremiumWrapper } from "@/components/global-premium-wrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -53,14 +54,16 @@ export default function RootLayout({
         className={`${inter.variable} ${calSans.variable} ${jetbrainsMono.variable} font-sans premium-theme`}
       >
         <PageTransition />
-        <PremiumThemeProvider>
-          <ThemeProvider>
-            <QueryProvider>
-              {children}
-              <Toaster />
-            </QueryProvider>
-          </ThemeProvider>
-        </PremiumThemeProvider>
+        <GlobalPremiumWrapper>
+          <PremiumThemeProvider>
+            <ThemeProvider>
+              <QueryProvider>
+                {children}
+                <Toaster />
+              </QueryProvider>
+            </ThemeProvider>
+          </PremiumThemeProvider>
+        </GlobalPremiumWrapper>
       </body>
     </html>
   );

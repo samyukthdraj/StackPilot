@@ -24,6 +24,17 @@
   background: #0d0d0d;
   color: #f5f0e8;
   font-family: "Inter", sans-serif;
+  cursor: none !important;
+}
+
+.premium-theme * {
+  cursor: none !important;
+}
+
+.premium-theme input,
+.premium-theme textarea,
+.premium-theme select {
+  cursor: none !important;
 }
 
 /* Override Tailwind colors */
@@ -133,12 +144,12 @@
 }
 
 .premium-theme ::-webkit-scrollbar-thumb {
-  background: #f5c842;
+  background: linear-gradient(180deg, #f5c842, #d4a832);
   border-radius: 5px;
 }
 
 .premium-theme ::-webkit-scrollbar-thumb:hover {
-  background: #f5d062;
+  background: linear-gradient(180deg, #f5d062, #e5b842);
 }
 
 /* Tables */
@@ -252,4 +263,29 @@ html {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Utility classes for accent colors */
+.bg-accent {
+  background-color: #f5c842 !important;
+}
+
+.text-accent {
+  color: #f5c842 !important;
+}
+
+.text-dark {
+  color: #0d0d0d !important;
+}
+
+.border-accent {
+  border-color: #f5c842 !important;
+}
+
+.hover\:bg-accent\/90:hover {
+  background-color: rgba(245, 196, 66, 0.9) !important;
+}
+
+.hover\:text-accent\/80:hover {
+  color: rgba(245, 196, 66, 0.8) !important;
 }

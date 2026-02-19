@@ -19,10 +19,33 @@ export function PremiumNavbar({
       const ScrollTrigger = window.ScrollTrigger;
       if (!gsap || !ScrollTrigger || !navbarRef.current) return;
 
-      ScrollTrigger.create({
-        start: "top -100",
-        onEnter: () => navbarRef.current?.classList.add("scrolled"),
-        onLeaveBack: () => navbarRef.current?.classList.remove("scrolled"),
+      // Get all sections
+      const sections = gsap.utils.toArray("section");
+
+      sections.forEach((section: unknown) => {
+        const sectionElement = section as HTMLElement;
+        const bgColor = window.getComputedStyle(sectionElement).backgroundColor;
+        const isLightSection = isLightBackground(bgColor);
+
+        ScrollTrigger.create({
+          trigger: sectionElement,
+          start: "top 80px",
+          end: "bottom 80px",
+          onEnter: () => {
+            if (isLightSection) {
+              navbarRef.current?.classList.add("scrolled");
+            } else {
+              navbarRef.current?.classList.remove("scrolled");
+            }
+          },
+          onEnterBack: () => {
+            if (isLightSection) {
+              navbarRef.current?.classList.add("scrolled");
+            } else {
+              navbarRef.current?.classList.remove("scrolled");
+            }
+          },
+        });
       });
 
       // Magnetic effect on buttons
@@ -51,6 +74,17 @@ export function PremiumNavbar({
           });
         });
       });
+    };
+
+    const isLightBackground = (color: string): boolean => {
+      const rgb = color.match(/\d+/g);
+      if (!rgb || rgb.length < 3) return false;
+      const brightness =
+        (parseInt(rgb[0]) * 299 +
+          parseInt(rgb[1]) * 587 +
+          parseInt(rgb[2]) * 114) /
+        1000;
+      return brightness > 128;
     };
 
     const checkGSAP = setInterval(() => {

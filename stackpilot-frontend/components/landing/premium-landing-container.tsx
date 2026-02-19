@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -168,19 +169,23 @@ export function PremiumLandingContainer() {
 
       {showLogin && (
         <div
-          className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 modal-overlay"
           style={{ cursor: "auto !important" }}
           onClick={() => setShowLogin(false)}
         >
+          <div className="modal-background-effects">
+            <div className="modal-glow modal-glow-1" />
+            <div className="modal-glow modal-glow-2" />
+          </div>
           <div
             className="w-full max-w-md"
             style={{ cursor: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <Card className="p-2 relative">
+            <Card className="p-2 relative modal-card animate-in">
               <button
                 onClick={() => setShowLogin(false)}
-                className="absolute top-6 right-6 cursor-pointer p-1 hover:bg-gray-100 rounded-full z-50"
+                className="absolute top-6 right-6 p-1 hover:bg-gray-800 rounded-full z-50 text-gray-400 hover:text-gray-200 transition-colors"
               >
                 <svg
                   className="h-5 w-5"
@@ -196,25 +201,25 @@ export function PremiumLandingContainer() {
                   />
                 </svg>
               </button>
-              <CardHeader>
-                <div className="flex justify-center mb-6">
+              <CardHeader className="space-y-4 pb-8">
+                <div className="flex justify-center mb-2">
                   <Image
                     src="/images/stackpilot_logo_bg_removed_upscaled.png"
                     alt="StackPilot"
-                    width={180}
-                    height={60}
-                    className="h-32 w-auto"
+                    width={160}
+                    height={160}
+                    className="h-10 w-auto"
                   />
                 </div>
                 <CardTitle className="text-2xl text-center">
                   Welcome back
                 </CardTitle>
-                <CardDescription className="text-center">
-                  Enter your credentials
+                <CardDescription className="text-center pb-2">
+                  Enter your credentials to access your account
                 </CardDescription>
               </CardHeader>
               <form onSubmit={loginForm.handleSubmit(handleLogin)}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                       {error}
@@ -226,7 +231,9 @@ export function PremiumLandingContainer() {
                       {...loginForm.register("email")}
                       type="email"
                       placeholder="you@example.com"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="off"
+                      onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.email && (
                       <p className="text-sm text-red-500">
@@ -240,7 +247,9 @@ export function PremiumLandingContainer() {
                       {...loginForm.register("password")}
                       type="password"
                       placeholder="••••••••"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="off"
+                      onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.password && (
                       <p className="text-sm text-red-500">
@@ -248,14 +257,16 @@ export function PremiumLandingContainer() {
                       </p>
                     )}
                   </div>
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-5 pt-2">
                   <Button
                     type="submit"
-                    className="w-full cursor-pointer"
+                    className="w-full bg-accent hover:bg-accent/90 text-dark font-semibold"
                     disabled={isLoading}
                   >
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>
-                  <p className="text-sm text-center">
+                  <p className="text-sm text-center text-gray-400">
                     Don&apos;t have an account?{" "}
                     <button
                       type="button"
@@ -263,12 +274,12 @@ export function PremiumLandingContainer() {
                         setShowLogin(false);
                         setShowRegister(true);
                       }}
-                      className="text-orange-500 cursor-pointer"
+                      className="text-accent hover:text-accent/80 font-medium"
                     >
                       Sign up
                     </button>
                   </p>
-                </CardContent>
+                </CardFooter>
               </form>
             </Card>
           </div>
@@ -277,18 +288,22 @@ export function PremiumLandingContainer() {
 
       {showRegister && (
         <div
-          className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 modal-overlay"
           style={{ cursor: "auto" }}
           onClick={() => setShowRegister(false)}
         >
+          <div className="modal-background-effects">
+            <div className="modal-glow modal-glow-1" />
+            <div className="modal-glow modal-glow-2" />
+          </div>
           <div
             className="w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <Card className="p-2 relative">
+            <Card className="p-2 relative modal-card animate-in">
               <button
                 onClick={() => setShowRegister(false)}
-                className="absolute top-6 right-6 cursor-pointer p-1 hover:bg-gray-100 rounded-full z-50"
+                className="absolute top-6 right-6 p-1 hover:bg-gray-800 rounded-full z-50 text-gray-400 hover:text-gray-200 transition-colors"
               >
                 <svg
                   className="h-5 w-5"
@@ -304,25 +319,25 @@ export function PremiumLandingContainer() {
                   />
                 </svg>
               </button>
-              <CardHeader>
-                <div className="flex justify-center mb-6">
+              <CardHeader className="space-y-4 pb-8">
+                <div className="flex justify-center mb-2">
                   <Image
                     src="/images/stackpilot_logo_bg_removed_upscaled.png"
                     alt="StackPilot"
-                    width={180}
-                    height={60}
-                    className="h-32 w-auto"
+                    width={160}
+                    height={160}
+                    className="h-10 w-auto"
                   />
                 </div>
                 <CardTitle className="text-2xl text-center">
                   Create an account
                 </CardTitle>
-                <CardDescription className="text-center">
-                  Get started with StackPilot
+                <CardDescription className="text-center pb-2">
+                  Enter your details to get started with StackPilot
                 </CardDescription>
               </CardHeader>
               <form onSubmit={registerForm.handleSubmit(handleRegister)}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                       {error}
@@ -333,7 +348,9 @@ export function PremiumLandingContainer() {
                     <Input
                       {...registerForm.register("name")}
                       placeholder="John Doe"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="off"
+                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.name && (
                       <p className="text-sm text-red-500">
@@ -347,7 +364,9 @@ export function PremiumLandingContainer() {
                       {...registerForm.register("email")}
                       type="email"
                       placeholder="you@example.com"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="off"
+                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.email && (
                       <p className="text-sm text-red-500">
@@ -361,7 +380,9 @@ export function PremiumLandingContainer() {
                       {...registerForm.register("password")}
                       type="password"
                       placeholder="••••••••"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="new-password"
+                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.password && (
                       <p className="text-sm text-red-500">
@@ -377,7 +398,9 @@ export function PremiumLandingContainer() {
                       {...registerForm.register("confirmPassword")}
                       type="password"
                       placeholder="••••••••"
-                      className="cursor-text bg-white"
+                      className="cursor-text"
+                      autoComplete="new-password"
+                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.confirmPassword && (
                       <p className="text-sm text-red-500">
@@ -385,14 +408,16 @@ export function PremiumLandingContainer() {
                       </p>
                     )}
                   </div>
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-5 pt-2">
                   <Button
                     type="submit"
-                    className="w-full cursor-pointer"
+                    className="w-full bg-accent hover:bg-accent/90 text-dark font-semibold"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating..." : "Create Account"}
                   </Button>
-                  <p className="text-sm text-center">
+                  <p className="text-sm text-center text-gray-400">
                     Already have an account?{" "}
                     <button
                       type="button"
@@ -400,12 +425,12 @@ export function PremiumLandingContainer() {
                         setShowRegister(false);
                         setShowLogin(true);
                       }}
-                      className="text-orange-500 cursor-pointer"
+                      className="text-accent hover:text-accent/80 font-medium"
                     >
                       Login
                     </button>
                   </p>
-                </CardContent>
+                </CardFooter>
               </form>
             </Card>
           </div>

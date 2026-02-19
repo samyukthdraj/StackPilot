@@ -97,16 +97,16 @@ export function RegisterContainer() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-navy to-navy-dark p-4">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-20 w-64 h-64 bg-orange-500 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-orange-500/50 rounded-full blur-3xl animate-float" />
+    <div className="min-h-screen flex items-center justify-center p-4 animate-in">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-accent rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/50 rounded-full blur-3xl" />
       </div>
 
-      <Card className="w-full max-w-md relative z-10">
+      <Card className="w-full max-w-md relative z-10 animate-in">
         <Link
           href="/"
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors z-20 bg-white rounded-full p-1 hover:bg-gray-100 cursor-pointer"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-300 transition-colors z-20 rounded-full p-1 hover:bg-gray-800"
           aria-label="Close"
         >
           <svg
@@ -160,7 +160,7 @@ export function RegisterContainer() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-navy">Full Name</label>
+              <label className="text-sm font-medium">Full Name</label>
               <Input
                 {...register("name")}
                 type="text"
@@ -174,7 +174,7 @@ export function RegisterContainer() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-navy">Email</label>
+              <label className="text-sm font-medium">Email</label>
               <Input
                 {...register("email")}
                 type="email"
@@ -188,7 +188,7 @@ export function RegisterContainer() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-navy">Password</label>
+              <label className="text-sm font-medium">Password</label>
               <div className="relative">
                 <Input
                   {...register("password")}
@@ -200,7 +200,7 @@ export function RegisterContainer() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -213,9 +213,7 @@ export function RegisterContainer() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-navy">
-                Confirm Password
-              </label>
+              <label className="text-sm font-medium">Confirm Password</label>
               <Input
                 {...register("confirmPassword")}
                 type={showPassword ? "text" : "password"}
@@ -234,7 +232,7 @@ export function RegisterContainer() {
           <CardFooter className="flex flex-col space-y-5 pt-2">
             <Button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="w-full bg-accent hover:bg-accent/90 text-dark font-semibold"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -252,11 +250,11 @@ export function RegisterContainer() {
               )}
             </Button>
 
-            <p className="text-sm text-center text-gray-600">
+            <p className="text-sm text-center text-gray-400">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-orange-500 hover:text-orange-600 font-medium"
+                className="text-accent hover:text-accent/80 font-medium"
               >
                 Login
               </Link>
