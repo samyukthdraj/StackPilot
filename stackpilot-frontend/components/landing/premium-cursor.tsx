@@ -24,8 +24,33 @@ export function PremiumCursor() {
       // Detect background color for contrast
       const element = document.elementFromPoint(x, y);
       if (element) {
-        const bgColor = window.getComputedStyle(element).backgroundColor;
-        const isLightBg = isLightBackground(bgColor);
+        let isLightBg = false;
+
+        if (element.closest('.premium-section-light') || element.closest('.bg-white') || element.closest('.bg-gray-50')) {
+          isLightBg = true;
+        } else if (element.closest('.premium-section-dark') || element.closest('.premium-hero') || element.closest('.premium-metrics-section')) {
+          isLightBg = false;
+        } else {
+          // Fallback to computed color
+          let currentEl: Element | null = element;
+          let bgColor = "rgba(0, 0, 0, 0)";
+          
+          while (currentEl) {
+            bgColor = window.getComputedStyle(currentEl).backgroundColor;
+            if (
+              bgColor !== "rgba(0, 0, 0, 0)" &&
+              bgColor !== "transparent" &&
+              bgColor !== ""
+            ) {
+              break;
+            }
+            currentEl = currentEl.parentElement;
+          }
+
+          if (bgColor && bgColor !== "rgba(0, 0, 0, 0)" && bgColor !== "transparent") {
+            isLightBg = isLightBackground(bgColor);
+          }
+        }
 
         if (isLightBg) {
           cursor.classList.add("dark-mode");
@@ -74,7 +99,7 @@ export function PremiumCursor() {
 
     const updateHoverElements = () => {
       const hoverElements = document.querySelectorAll(
-        "a, button, .tab-item, .tilt-card, input, textarea, select, [role='button'], .metric-card, .interactive-orb",
+        "a, button, input, textarea, select, [role='button'], .interactive-orb",
       );
       hoverElements.forEach((el) => {
         el.addEventListener("mouseenter", handleMouseEnter);

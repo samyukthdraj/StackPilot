@@ -25,6 +25,36 @@ const features = [
 
 export function PremiumFeatures() {
   const [activeTab, setActiveTab] = useState(0);
+  const [currentText, setCurrentText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentWord = features[activeTab].title;
+    let timer: NodeJS.Timeout;
+
+    if (!isDeleting && currentText === currentWord) {
+      // Pause for a few seconds before deleting
+      timer = setTimeout(() => setIsDeleting(true), 2500);
+    } else if (isDeleting && currentText === "") {
+      // Done deleting, wait a tiny bit then move to next word
+      timer = setTimeout(() => {
+        setIsDeleting(false);
+        setActiveTab((prev) => (prev + 1) % features.length);
+      }, 500);
+    } else {
+      // Typing or deleting
+      const nextDelay = isDeleting ? 40 : 100;
+      timer = setTimeout(() => {
+        setCurrentText(
+          isDeleting
+            ? currentWord.slice(0, currentText.length - 1)
+            : currentWord.slice(0, currentText.length + 1),
+        );
+      }, nextDelay);
+    }
+
+    return () => clearTimeout(timer);
+  }, [currentText, isDeleting, activeTab]);
 
   useEffect(() => {
     const initAnimations = () => {
@@ -91,6 +121,8 @@ export function PremiumFeatures() {
     if (!gsap) return;
 
     setActiveTab(index);
+    setCurrentText("");
+    setIsDeleting(false);
 
     const tabImage = document.querySelector(".premium-tab-image");
     if (!tabImage) return;
@@ -145,7 +177,17 @@ export function PremiumFeatures() {
                 fontSize: "48px",
               }}
             >
-              {features[activeTab].title}
+              {currentText}
+              <span
+                style={{
+                  fontWeight: "300",
+                  opacity: 0.7,
+                  animation: "premiumBlink 1s step-end infinite",
+                  marginLeft: "4px",
+                }}
+              >
+                |
+              </span>
             </div>
           </div>
         </div>

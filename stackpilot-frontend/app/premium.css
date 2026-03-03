@@ -567,7 +567,6 @@ html {
 }
 
 .premium-tab-item {
-  cursor: pointer;
   padding: 30px 0;
   border-bottom: 2px solid rgba(13, 13, 13, 0.1);
   transition: all 0.3s ease;
@@ -842,5 +841,14 @@ html {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes premiumBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
   }
 }
