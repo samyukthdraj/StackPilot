@@ -167,11 +167,12 @@ export function LoginContainer() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
               <Input
-                {...register("email")}
+                {...register("email", {
+                  onChange: () => setError(null),
+                })}
                 type="email"
                 placeholder="you@example.com"
                 autoComplete="off"
-                onChange={() => setError(null)}
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -182,11 +183,12 @@ export function LoginContainer() {
               <label className="text-sm font-medium">Password</label>
               <div className="relative">
                 <Input
-                  {...register("password")}
+                  {...register("password", {
+                    onChange: () => setError(null),
+                  })}
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="off"
-                  onChange={() => setError(null)}
                 />
                 <button
                   type="button"

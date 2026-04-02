@@ -164,11 +164,12 @@ export function RegisterContainer() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Full Name</label>
               <Input
-                {...register("name")}
+                {...register("name", {
+                  onChange: () => setError(null),
+                })}
                 type="text"
                 placeholder="John Doe"
                 autoComplete="off"
-                onChange={() => setError(null)}
               />
               {errors.name && (
                 <p className="text-sm text-red-500">{errors.name.message}</p>
@@ -178,11 +179,12 @@ export function RegisterContainer() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
               <Input
-                {...register("email")}
+                {...register("email", {
+                  onChange: () => setError(null),
+                })}
                 type="email"
                 placeholder="you@example.com"
                 autoComplete="off"
-                onChange={() => setError(null)}
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -193,11 +195,12 @@ export function RegisterContainer() {
               <label className="text-sm font-medium">Password</label>
               <div className="relative">
                 <Input
-                  {...register("password")}
+                  {...register("password", {
+                    onChange: () => setError(null),
+                  })}
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="new-password"
-                  onChange={() => setError(null)}
                 />
                 <button
                   type="button"
@@ -217,11 +220,12 @@ export function RegisterContainer() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm Password</label>
               <Input
-                {...register("confirmPassword")}
+                {...register("confirmPassword", {
+                  onChange: () => setError(null),
+                })}
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                onChange={() => setError(null)}
               />
               {errors.confirmPassword && (
                 <p className="text-sm text-red-500">

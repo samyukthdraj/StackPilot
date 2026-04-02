@@ -283,13 +283,14 @@ export function PremiumLandingContainer() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Email</label>
                     <Input
-                      {...loginForm.register("email")}
+                      {...loginForm.register("email", {
+                        onChange: () => setError(null),
+                      })}
                       type="text"
                       placeholder="you@example.com"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.email && (
                       <p className="text-sm text-red-500">
@@ -300,13 +301,14 @@ export function PremiumLandingContainer() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Password</label>
                     <Input
-                      {...loginForm.register("password")}
+                      {...loginForm.register("password", {
+                        onChange: () => setError(null),
+                      })}
                       type="password"
                       placeholder="••••••••"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {loginForm.formState.errors.password && (
                       <p className="text-sm text-red-500">
@@ -409,13 +411,14 @@ export function PremiumLandingContainer() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Full Name</label>
                     <Input
-                      {...registerForm.register("name")}
+                      {...registerForm.register("name", {
+                        onChange: () => setError(null),
+                      })}
                       type="text"
                       placeholder="John Doe"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.name && (
                       <p className="text-sm text-red-500">
@@ -426,13 +429,14 @@ export function PremiumLandingContainer() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Email</label>
                     <Input
-                      {...registerForm.register("email")}
+                      {...registerForm.register("email", {
+                        onChange: () => setError(null),
+                      })}
                       type="text"
                       placeholder="you@example.com"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.email && (
                       <p className="text-sm text-red-500">
@@ -443,13 +447,14 @@ export function PremiumLandingContainer() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Password</label>
                     <Input
-                      {...registerForm.register("password")}
+                      {...registerForm.register("password", {
+                        onChange: () => setError(null),
+                      })}
                       type="password"
                       placeholder="••••••••"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.password && (
                       <p className="text-sm text-red-500">
@@ -462,13 +467,14 @@ export function PremiumLandingContainer() {
                       Confirm Password
                     </label>
                     <Input
-                      {...registerForm.register("confirmPassword")}
+                      {...registerForm.register("confirmPassword", {
+                        onChange: () => setError(null),
+                      })}
                       type="password"
                       placeholder="••••••••"
                       className="cursor-text"
                       autoComplete="new-password"
                       data-form-type="other"
-                      onChange={() => setError(null)}
                     />
                     {registerForm.formState.errors.confirmPassword && (
                       <p className="text-sm text-red-500">
