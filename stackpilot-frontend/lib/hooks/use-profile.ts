@@ -7,15 +7,14 @@ import { AxiosError } from "axios"; // Added for better error typing
 interface ProfileStats {
   totalResumes: number;
   totalScans: number;
-  totalMatches: number;
-  totalSaved: number;
+  savedMatches: number;
+  savedJobs: number;
   totalApplied: number;
   successRate: number;
+  remainingScans: number;
   activityData: Array<{
     date: string;
     scans: number;
-    matches: number;
-    saves: number;
   }>;
 }
 
@@ -49,38 +48,30 @@ export function useProfileStats() {
     queryKey: ["profile-stats"],
     queryFn: async () => {
       // Fetch all relevant data
-      const [resumes, usage, matches, saved, activityChart] = await Promise.all(
-        [
-          apiClient.get("/resumes"),
-          apiClient.get("/usage/summary"),
-          apiClient.get("/jobs/matches?limit=100"),
-          apiClient.get("/jobs/saved"),
-          apiClient.get("/users/activity-chart?days=30"),
-        ],
-      );
+      const [resumes, usage, savedStats, activityChart] = await Promise.all([
+        apiClient.get("/resumes"),
+        apiClient.get("/usage/summary"),
+        apiClient.get("/jobs/saved/stats"),
+        apiClient.get("/users/activity-chart?days=30"),
+      ]);
 
       const totalScans = usage.data.resumeScans.used;
-      const totalMatches = matches.data.length;
-      const totalSaved = saved.data.items.length;
+      const { applied, total: totalSaved } = savedStats.data;
 
-      // Properly typed filter
-      const totalApplied = saved.data.items.filter(
-        (item: { applied?: boolean }) => item.applied,
-      ).length;
-
-      // Calculate success rate
+      // Calculate success rate based on total pool
       const successRate =
-        totalApplied > 0 ? Math.round((totalApplied / totalSaved) * 100) : 0;
+        applied > 0 ? Math.round((applied / (totalSaved || 1)) * 100) : 0;
 
       return {
         totalResumes: resumes.data.length,
         totalScans,
-        totalMatches,
-        totalSaved,
-        totalApplied,
+        savedMatches: 0, // Not used but fulfilling interface
+        savedJobs: totalSaved,
+        totalApplied: applied,
         successRate,
+        remainingScans: usage.data.resumeScans.remaining,
         activityData: activityChart.data,
-      } as ProfileStats;
+      } as unknown as ProfileStats;
     },
     enabled: isAuthenticated,
   });
@@ -226,6 +217,14 @@ export function useUpdateName() {
         description: errorMessage,
         variant: "destructive",
       });
+    },
+  });
+}
+
+export function useTestEmail() {
+  return useMutation({
+    mutationFn: async () => {
+      await apiClient.post("/users/profile/test-email");
     },
   });
 }

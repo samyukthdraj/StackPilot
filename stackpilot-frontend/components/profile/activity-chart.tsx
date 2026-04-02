@@ -64,30 +64,79 @@ export function ActivityChart() {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={stats.activityData}
-              margin={{ top: 10, right: 30, left: -20, bottom: 0 }}
+              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                className="stroke-gray-200"
+                stroke="#2a2a2a"
+                vertical={false}
               />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => {
                   const d = new Date(date);
-                  return `${d.getMonth() + 1}/${d.getDate()}`;
+                  return d.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  });
                 }}
-                className="text-xs"
+                tick={{ fill: "#666", fontSize: 10 }}
+                axisLine={{ stroke: "#2a2a2a" }}
+                tickLine={false}
+                minTickGap={30}
+                label={{ 
+                  value: "Timeline", 
+                  position: "insideBottom", 
+                  offset: -10, 
+                  fill: "#444", 
+                  fontSize: 10,
+                  fontWeight: "bold",
+                  textAnchor: "middle"
+                }}
               />
-              <YAxis className="text-xs" />
+              <YAxis 
+                tick={{ fill: "#666", fontSize: 10 }}
+                axisLine={{ stroke: "#2a2a2a" }}
+                tickLine={false}
+                allowDecimals={false}
+                label={{ 
+                  value: "Activity Count", 
+                  angle: -90, 
+                  position: "insideLeft", 
+                  offset: 15,
+                  fill: "#444",
+                  fontSize: 10,
+                  fontWeight: "bold",
+                  textAnchor: "middle"
+                }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0d0d0d",
                   border: "1px solid #2a2a2a",
-                  borderRadius: "8px",
-                  color: "#f5f0e8"
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+                  color: "#f5f0e8",
+                  fontSize: "12px",
+                  fontFamily: "Inter, sans-serif"
+                }}
+                itemStyle={{ padding: "2px 0" }}
+                cursor={{ stroke: "#f5c842", strokeWidth: 1 }}
+              />
+              <Legend 
+                verticalAlign="top" 
+                align="right" 
+                height={36} 
+                iconType="circle"
+                wrapperStyle={{ 
+                  paddingBottom: "20px",
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: "#888"
                 }}
               />
-              <Legend />
               <Area
                 type="monotone"
                 dataKey="matches"

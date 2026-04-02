@@ -14,6 +14,7 @@ import { JobMatch } from './jobs/entities/job-match.entity';
 import { UsageLog } from './usage/entities/usage-log.entity';
 import { UsersModule } from './users/users.module';
 import { SavedJob } from './jobs/entities/saved-job.entity';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { SavedJob } from './jobs/entities/saved-job.entity';
     UsageModule,
     AdminModule,
     UsersModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

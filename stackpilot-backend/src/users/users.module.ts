@@ -5,9 +5,13 @@ import { User } from './user.entity';
 import { Resume } from '../resumes/entities/resume.entity';
 import { JobMatch } from '../jobs/entities/job-match.entity';
 import { SavedJob } from '../jobs/entities/saved-job.entity';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Resume, JobMatch, SavedJob])],
+  imports: [
+    TypeOrmModule.forFeature([User, Resume, JobMatch, SavedJob]),
+    EmailModule,
+  ],
   controllers: [UsersController],
   exports: [TypeOrmModule],
 })

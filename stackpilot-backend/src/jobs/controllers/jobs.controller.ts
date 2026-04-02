@@ -65,7 +65,7 @@ export class JobsController {
       filters.postedAt = daysAgo;
     }
     if (search) filters.search = search;
-    
+
     if (companies) {
       filters.companies = Array.isArray(companies) ? companies : [companies];
     }
@@ -84,11 +84,13 @@ export class JobsController {
     if (experienceMax) {
       filters.experienceMax = parseInt(experienceMax, 10);
     }
-    
+
     if (limit) filters.limit = parseInt(limit, 10);
     if (offset) filters.offset = parseInt(offset, 10);
 
-    this.logger.debug(`[CONTROLLER] getJobs called with query params: ${JSON.stringify(filters)}`);
+    this.logger.debug(
+      `[CONTROLLER] getJobs called with query params: ${JSON.stringify(filters)}`,
+    );
     return this.jobsService.findJobs(filters);
   }
 

@@ -37,10 +37,13 @@ export class JobSyncService {
   private async syncJobsForCountry(country: string) {
     try {
       // Perform a broad search for software roles in the target country
-      const jobs = await this.jsearchService.searchJobs('Software Engineer', country);
+      const jobs = await this.jsearchService.searchJobs(
+        'Software Engineer',
+        country,
+      );
 
       for (const jSearchJob of jobs) {
-        await this.saveJob(jSearchJob as JSearchJob, country);
+        await this.saveJob(jSearchJob, country);
       }
 
       this.logger.log(`Synced ${jobs.length} jobs for ${country} via JSearch`);
@@ -49,7 +52,10 @@ export class JobSyncService {
     }
   }
 
-  public extractExperienceFromDescription(description: string, title: string): { min: number | undefined; max: number | undefined } {
+  public extractExperienceFromDescription(
+    description: string,
+    title: string,
+  ): { min: number | undefined; max: number | undefined } {
     if (!description && !title) return { min: undefined, max: undefined };
 
     const cleanDesc = (description || '')
@@ -57,7 +63,9 @@ export class JobSyncService {
       .replace(/\s+/g, ' ');
 
     // Strategy 1: Look for "X-Y years" or "X to Y years" (Range)
-    const rangeMatch = cleanDesc.match(/(\d+)\s*(?:-|to)\s*(\d+)\s*(?:years|yrs|year|yr)\b/i);
+    const rangeMatch = cleanDesc.match(
+      /(\d+)\s*(?:-|to)\s*(\d+)\s*(?:years|yrs|year|yr)\b/i,
+    );
     if (rangeMatch) {
       const min = parseInt(rangeMatch[1], 10);
       const max = parseInt(rangeMatch[2], 10);
@@ -65,21 +73,27 @@ export class JobSyncService {
     }
 
     // Strategy 2: Look for "X+ years"
-    const plusMatch = cleanDesc.match(/(\d+)\s*(?:\+|(?:plus))\s*(?:years|yrs|year|yr)\b/i);
+    const plusMatch = cleanDesc.match(
+      /(\d+)\s*(?:\+|(?:plus))\s*(?:years|yrs|year|yr)\b/i,
+    );
     if (plusMatch) {
       const min = parseInt(plusMatch[1], 10);
       if (min < 25) return { min, max: undefined };
     }
 
     // Strategy 3: Look for "minimum of X", "at least X", "required X"
-    const minMatch = cleanDesc.match(/(?:minimum|at least|required|needs|preferred|expecting|require|should have)\s*(?:of\s*)?(\d+)\s*(?:years|yrs|year|yr)\b/i);
+    const minMatch = cleanDesc.match(
+      /(?:minimum|at least|required|needs|preferred|expecting|require|should have)\s*(?:of\s*)?(\d+)\s*(?:years|yrs|year|yr)\b/i,
+    );
     if (minMatch) {
       const min = parseInt(minMatch[1], 10);
       if (min < 25) return { min, max: undefined };
     }
 
     // Strategy 4: Look for "X years experience" specifically
-    const expMatch = cleanDesc.match(/(\d+)\s*(?:years|yrs|year|yr)\s*(?:of\s*)?(?:professional\s*)?(?:experience|exp|background|industry)/i);
+    const expMatch = cleanDesc.match(
+      /(\d+)\s*(?:years|yrs|year|yr)\s*(?:of\s*)?(?:professional\s*)?(?:experience|exp|background|industry)/i,
+    );
     if (expMatch) {
       const min = parseInt(expMatch[1], 10);
       if (min < 25) return { min, max: undefined };
@@ -93,18 +107,44 @@ export class JobSyncService {
       const start = Math.max(0, m.index - 70);
       const end = Math.min(cleanDesc.length, m.index + 120);
       const context = cleanDesc.substring(start, end).toLowerCase();
-      if (context.includes('exp') || context.includes('background') || context.includes('professional') || context.includes('work') || context.includes('software')) {
+      if (
+        context.includes('exp') ||
+        context.includes('background') ||
+        context.includes('professional') ||
+        context.includes('work') ||
+        context.includes('software')
+      ) {
         if (val > 0 && val < 20) return { min: val, max: undefined };
       }
     }
 
     // Strategy 6: Heuristics based on title
     const lowTitle = title?.toLowerCase() || '';
-    const seniorKeywords = ['senior', 'lead', 'architect', 'principal', 'staff', 'vp', 'manager', 'expert', 'head', 'director'];
-    const juniorKeywords = ['junior', 'entry', 'intern', 'associate', 'graduate', 'trainee'];
+    const seniorKeywords = [
+      'senior',
+      'lead',
+      'architect',
+      'principal',
+      'staff',
+      'vp',
+      'manager',
+      'expert',
+      'head',
+      'director',
+    ];
+    const juniorKeywords = [
+      'junior',
+      'entry',
+      'intern',
+      'associate',
+      'graduate',
+      'trainee',
+    ];
 
-    if (seniorKeywords.some((kw) => lowTitle.includes(kw))) return { min: 5, max: undefined };
-    if (juniorKeywords.some((kw) => lowTitle.includes(kw))) return { min: 0, max: 2 };
+    if (seniorKeywords.some((kw) => lowTitle.includes(kw)))
+      return { min: 5, max: undefined };
+    if (juniorKeywords.some((kw) => lowTitle.includes(kw)))
+      return { min: 0, max: 2 };
 
     return { min: undefined, max: undefined };
   }
@@ -123,17 +163,23 @@ export class JobSyncService {
       }
 
       // 2. Fallback to extracting from description/highlights (Regex & Heuristics)
-      const qualifications = jSearchJob.job_highlights?.Qualifications?.join('\n') || '';
+      const qualifications =
+        jSearchJob.job_highlights?.Qualifications?.join('\n') || '';
       const combinedText = `${jSearchJob.job_description}\n${qualifications}`;
-      
-      const extracted = this.extractExperienceFromDescription(combinedText, jSearchJob.job_title);
-      
+
+      const extracted = this.extractExperienceFromDescription(
+        combinedText,
+        jSearchJob.job_title,
+      );
+
       // Merge: Native data takes priority over extracted regex data
       minExp = minExp ?? extracted.min;
       maxExp = maxExp ?? extracted.max;
 
       if (minExp !== undefined) {
-        this.logger.log(`Verified Experience for "${jSearchJob.job_title}": ${minExp} years`);
+        this.logger.log(
+          `Verified Experience for "${jSearchJob.job_title}": ${minExp} years`,
+        );
       }
 
       const existingJob = await this.jobRepository.findOne({
@@ -143,7 +189,9 @@ export class JobSyncService {
         },
       });
 
-      const skills = this.extractSkillsFromDescription(jSearchJob.job_description);
+      const skills = this.extractSkillsFromDescription(
+        jSearchJob.job_description,
+      );
 
       const jobData = {
         title: jSearchJob.job_title,
@@ -239,7 +287,7 @@ export class JobSyncService {
       AND id NOT IN (SELECT job_id FROM saved_jobs)
       AND id NOT IN (SELECT job_id FROM job_matches)
       `,
-      [thirtyDaysAgo]
+      [thirtyDaysAgo],
     );
   }
 }

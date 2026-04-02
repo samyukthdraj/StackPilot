@@ -44,6 +44,7 @@ export class EmailService {
       this.logger.log(`Welcome email sent to ${email}`);
     } catch (error) {
       this.logger.error('Error sending welcome email:', error);
+      throw error;
     }
   }
 

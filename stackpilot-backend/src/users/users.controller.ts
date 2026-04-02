@@ -1,4 +1,12 @@
-import { Controller, Get, UseGuards, Query, Body, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Query,
+  Body,
+  Post,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserId } from '../auth/user-id.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +15,7 @@ import { Resume } from '../resumes/entities/resume.entity';
 import { JobMatch } from '../jobs/entities/job-match.entity';
 import { SavedJob } from '../jobs/entities/saved-job.entity';
 import { User } from './user.entity';
+import { EmailService } from '../email/email.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -20,6 +29,7 @@ export class UsersController {
     private savedJobRepository: Repository<SavedJob>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private emailService: EmailService,
   ) {}
 
   @Get('dashboard-stats')
@@ -287,7 +297,7 @@ export class UsersController {
     @Body() preferences: Record<string, any>,
   ) {
     await this.userRepository.update(userId, {
-      notificationPreferences: preferences as any,
+      notificationPreferences: preferences,
     });
     return { success: true };
   }
@@ -296,5 +306,20 @@ export class UsersController {
   async updateName(@UserId() userId: string, @Body('name') name: string) {
     await this.userRepository.update(userId, { name });
     return { success: true, name };
+  }
+
+  @Post('profile/test-email')
+  async testEmail(@UserId() userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+
+    try {
+      await this.emailService.sendWelcomeEmail(user.email, user.name || 'User');
+      return { success: true };
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Email test failed: ${errorMessage}`);
+    }
   }
 }

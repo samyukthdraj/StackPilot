@@ -25,7 +25,11 @@ import { join } from 'path';
         const transport: Record<string, any> = {
           host,
           port,
-          secure: false,
+          secure: port === 465, // Use true for 465, false for other ports
+          tls: {
+            rejectUnauthorized: false, // Helps with local development certificate issues
+          },
+          pool: true, // Reuse SMTP connections
         };
 
         if (user && pass) {

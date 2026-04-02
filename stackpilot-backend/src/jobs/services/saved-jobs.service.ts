@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SavedJob } from '../entities/saved-job.entity';
 import { Job } from '../entities/job.entity';
+import { JobMatch } from '../entities/job-match.entity';
 import { SaveJobDto, UpdateSavedJobDto } from '../dto/save-job.dto';
 
 @Injectable()
@@ -19,6 +20,8 @@ export class SavedJobsService {
     private savedJobRepository: Repository<SavedJob>,
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
+    @InjectRepository(JobMatch)
+    private jobMatchRepository: Repository<JobMatch>,
   ) {}
 
   async saveJob(
@@ -181,6 +184,8 @@ export class SavedJobsService {
     total: number;
     applied: number;
     pending: number;
+    savedMatches: number;
+    manualSaves: number;
     topTags: { tag: string; count: number }[];
   }> {
     const savedJobs = await this.savedJobRepository.find({
@@ -190,6 +195,15 @@ export class SavedJobsService {
     const total = savedJobs.length;
     const applied = savedJobs.filter((j) => j.applied).length;
     const pending = total - applied;
+
+    // EXCLUSIVE Categorization:
+    // Saved Matches = Explicitly tagged AI discoveries (e.g., 1)
+    // Saved Jobs = Explicitly tagged manual bookmarks (total - matches, e.g., 4)
+    const savedMatchesCount = savedJobs.filter((sj) =>
+      sj.tags?.includes('match'),
+    ).length;
+
+    const manualSavesCount = Math.max(0, total - savedMatchesCount);
 
     // Calculate top tags
     const tagCount: Record<string, number> = {};
@@ -204,6 +218,13 @@ export class SavedJobsService {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    return { total, applied, pending, topTags };
+    return {
+      total,
+      applied,
+      pending,
+      savedMatches: savedMatchesCount,
+      manualSaves: manualSavesCount,
+      topTags,
+    };
   }
 }

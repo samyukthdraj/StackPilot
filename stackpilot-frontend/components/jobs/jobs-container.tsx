@@ -303,7 +303,7 @@ export function JobsContainer() {
           return next;
         });
       } else {
-        await apiClient.post("/jobs/saved", { jobId });
+        await apiClient.post(`/jobs/saved/${jobId}`, { tags: ["manual"] });
         setSavedJobs((prev) => new Set(prev).add(jobId));
       }
       fetchSavedJobs();

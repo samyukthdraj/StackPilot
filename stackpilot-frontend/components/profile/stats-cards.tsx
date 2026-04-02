@@ -16,40 +16,11 @@ const statItems = [
     bgColor: "bg-[#f5c842]/5",
   },
   {
-    key: "totalScans",
-    icon: animations.scan,
-    label: "ATS Scans",
-    color: "#f5c842",
-    bgColor: "bg-[#f5c842]/5",
-  },
-  {
-    key: "totalMatches",
-    icon: animations.match,
-    label: "Job Matches",
-    color: "#f5c842",
-    bgColor: "bg-[#f5c842]/5",
-  },
-  {
-    key: "totalSaved",
-    icon: animations.save,
+    key: "savedJobs",
+    icon: animations.bookmark,
     label: "Saved Jobs",
     color: "#f5c842",
     bgColor: "bg-[#f5c842]/5",
-  },
-  {
-    key: "totalApplied",
-    icon: animations.apply,
-    label: "Applications",
-    color: "#f5c842",
-    bgColor: "bg-[#f5c842]/5",
-  },
-  {
-    key: "successRate",
-    icon: animations.success,
-    label: "Success Rate",
-    color: "#f5c842",
-    bgColor: "bg-[#f5c842]/5",
-    suffix: "%",
   },
 ];
 
@@ -58,16 +29,16 @@ export function StatsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
+      <div className="grid gap-6 md:grid-cols-2">
+        {statItems.map((_, i) => (
           <Card key={i} className="border-[#2a2a2a] bg-[#1a1a1a]">
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-4">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-16" />
+                  <Skeleton className="h-4 w-24 bg-[#333]" />
+                  <Skeleton className="h-10 w-16 bg-[#333]" />
                 </div>
-                <Skeleton className="w-14 h-14 rounded-xl" />
+                <Skeleton className="w-14 h-14 rounded-xl bg-[#333]" />
               </div>
             </CardContent>
           </Card>
@@ -79,7 +50,7 @@ export function StatsCards() {
   if (!stats) return null;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2">
       {statItems.map((item, index) => {
         const value = stats[item.key as keyof typeof stats];
 
@@ -98,7 +69,6 @@ export function StatsCards() {
                   </p>
                   <p className="text-4xl font-bold text-[#f5f0e8] group-hover:text-[#f5c842] transition-colors duration-300">
                     {typeof value === "number" ? value : 0}
-                    {item.suffix}
                   </p>
                 </div>
                 <div

@@ -43,7 +43,9 @@ export class JSearchService {
     private readonly httpWrapper: HttpWrapperService,
   ) {
     this.apiKey = this.configService.get<string>('JSEARCH_API_KEY') || '';
-    this.apiHost = this.configService.get<string>('JSEARCH_API_HOST') || 'jsearch.p.rapidapi.com';
+    this.apiHost =
+      this.configService.get<string>('JSEARCH_API_HOST') ||
+      'jsearch.p.rapidapi.com';
   }
 
   async searchJobs(

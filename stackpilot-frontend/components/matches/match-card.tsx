@@ -58,7 +58,7 @@ export function MatchCard({
           description: "Job removed from saved list",
         });
       } else {
-        await apiClient.post(`/jobs/saved/${job?.id}`, {});
+        await apiClient.post(`/jobs/saved/${job?.id}`, { tags: ["match"] });
         toast({
           title: "Job saved",
           description: "Job added to your saved list",

@@ -6,6 +6,9 @@ import { JobMatch } from '../entities/job-match.entity';
 import { Resume } from '../../resumes/entities/resume.entity';
 import { JSearchService } from './jsearch.service';
 import { JobSyncService } from './job-sync.service';
+import { EmailService } from '../../email/email.service';
+import { User } from '../../users/user.entity';
+
 
 export interface MatchScore {
   jobId: string;
@@ -37,6 +40,9 @@ export class JobMatchingService {
     private jobMatchRepository: Repository<JobMatch>,
     private jsearchService: JSearchService,
     private jobSyncService: JobSyncService,
+    private emailService: EmailService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   calculateMatchScore(resume: Resume, job: Job): MatchScore {
@@ -65,15 +71,15 @@ export class JobMatchingService {
 
       // Final score (re-weighted to prioritize user experience and title)
       let total =
-        skillMatch * 0.30 +
-        experienceScore * 0.50 +
+        skillMatch * 0.3 +
+        experienceScore * 0.5 +
         keywordScore * 0.15 +
         recencyScore * 0.05;
 
-      // Hard penalty: If the specific job role/title has no semantic overlap with their past experience, 
+      // Hard penalty: If the specific job role/title has no semantic overlap with their past experience,
       // heavily slash the total score so it drops below the 60% visibility threshold.
       if (experienceScore < 20) {
-        total = total * 0.5; 
+        total = total * 0.5;
       }
 
       total = Math.round(total);
@@ -276,10 +282,7 @@ export class JobMatchingService {
 
       if (searchQuery) {
         try {
-          const jJobs = await this.jsearchService.searchJobs(
-            searchQuery,
-            'us',
-          );
+          const jJobs = await this.jsearchService.searchJobs(searchQuery, 'us');
 
           if (jJobs && jJobs.length > 0) {
             // Save them to local DB so calculating match works easily
@@ -313,11 +316,15 @@ export class JobMatchingService {
 
       for (const job of jobs) {
         // Self-healing: if experience is missing, try to re-extract it from the stored description
-        if (job.experienceRequiredMin === null || job.experienceRequiredMin === undefined) {
-          const extracted = this.jobSyncService.extractExperienceFromDescription(
-            job.description || '',
-            job.title,
-          );
+        if (
+          job.experienceRequiredMin === null ||
+          job.experienceRequiredMin === undefined
+        ) {
+          const extracted =
+            this.jobSyncService.extractExperienceFromDescription(
+              job.description || '',
+              job.title,
+            );
           if (extracted.min !== undefined) {
             job.experienceRequiredMin = extracted.min;
             job.experienceRequiredMax = extracted.max;
@@ -328,7 +335,10 @@ export class JobMatchingService {
                 experienceRequiredMax: extracted.max,
               })
               .catch((err) =>
-                this.logger.error(`Failed to self-heal exp for job ${job.id}`, err),
+                this.logger.error(
+                  `Failed to self-heal exp for job ${job.id}`,
+                  err,
+                ),
               );
           }
         }
@@ -357,22 +367,35 @@ export class JobMatchingService {
       // Sanitize score and breakdown to prevent database "Value is out of range" or JSON errors
       const sanitizedScore = isFinite(match.score) ? match.score : 0;
       const sanitizedBreakdown = {
-        skillMatch: isFinite(match.breakdown.skillMatch) ? match.breakdown.skillMatch : 0,
-        keywordScore: isFinite(match.breakdown.keywordScore) ? match.breakdown.keywordScore : 0,
-        experienceScore: isFinite(match.breakdown.experienceScore) ? match.breakdown.experienceScore : 0,
-        recencyScore: isFinite(match.breakdown.recencyScore) ? match.breakdown.recencyScore : 0,
-        total: isFinite(match.breakdown.total ?? match.score) ? (match.breakdown.total ?? match.score) : 0,
+        skillMatch: isFinite(match.breakdown.skillMatch)
+          ? match.breakdown.skillMatch
+          : 0,
+        keywordScore: isFinite(match.breakdown.keywordScore)
+          ? match.breakdown.keywordScore
+          : 0,
+        experienceScore: isFinite(match.breakdown.experienceScore)
+          ? match.breakdown.experienceScore
+          : 0,
+        recencyScore: isFinite(match.breakdown.recencyScore)
+          ? match.breakdown.recencyScore
+          : 0,
+        total: isFinite(match.breakdown.total ?? match.score)
+          ? (match.breakdown.total ?? match.score)
+          : 0,
       };
 
       if (existingMatch) {
         // Update existing match
-        await this.jobMatchRepository.update({ id: existingMatch.id }, {
-          score: sanitizedScore,
-          scoreBreakdown: sanitizedBreakdown,
-          matchedSkills: match.matchedSkills,
-          missingSkills: match.missingSkills,
-          viewed: false, // Reset viewed status on new match
-        });
+        await this.jobMatchRepository.update(
+          { id: existingMatch.id },
+          {
+            score: sanitizedScore,
+            scoreBreakdown: sanitizedBreakdown,
+            matchedSkills: match.matchedSkills,
+            missingSkills: match.missingSkills,
+            viewed: false, // Reset viewed status on new match
+          },
+        );
       } else {
         // Create new match
         const jobMatch = this.jobMatchRepository.create({
@@ -385,6 +408,38 @@ export class JobMatchingService {
         });
 
         await this.jobMatchRepository.save(jobMatch);
+      }
+
+      // Automation: Trigger Instant Match Alert for 68%+ matches
+      if (sanitizedScore >= 68) {
+        const user = await this.userRepository.findOne({
+          where: { id: userId },
+        });
+        if (user?.notificationPreferences?.email?.newMatches) {
+          const job = await this.jobRepository.findOne({
+            where: { id: match.jobId },
+          });
+          if (job) {
+            void this.emailService.sendJobMatchesEmail(
+              user.email,
+              user.name || 'User',
+              [
+                {
+                  title: job.title,
+                  company: job.company,
+                  location: job.location,
+                  score: sanitizedScore,
+                  matchedSkills: match.matchedSkills,
+                  missingSkills: match.missingSkills,
+                  url: job.jobUrl || 'https://stackpilot.com/jobs',
+                },
+              ],
+            );
+            this.logger.log(
+              `Instant match alert triggered for user ${userId} for job ${job.id}`,
+            );
+          }
+        }
       }
     } catch (error) {
       this.logger.error('Error saving job match:', error);
