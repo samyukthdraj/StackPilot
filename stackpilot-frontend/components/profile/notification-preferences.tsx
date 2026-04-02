@@ -17,84 +17,84 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from "@/lib/hooks/use-profile";
-import { useState } from "react"; // Removed useEffect
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NotificationPreferences() {
   const { data: preferences, isLoading } = useNotificationPreferences();
   const updatePreferences = useUpdateNotificationPreferences();
 
-  // Initialize localPrefs directly from preferences, no useEffect needed
   const [localPrefs, setLocalPrefs] = useState(preferences);
 
-  // If preferences change and localPrefs haven't been modified, update them
-  // But only if they're different to avoid unnecessary renders
-  if (
-    preferences &&
-    localPrefs &&
-    JSON.stringify(preferences) !== JSON.stringify(localPrefs)
-  ) {
-    // Only update if the user hasn't made changes (localPrefs equals the previous preferences)
-    // This is a bit tricky - we need to know if the user has made edits
-    // For simplicity, we'll just update when preferences change from the server
-    // But we'll check if the current localPrefs match the old preferences
-    setLocalPrefs(preferences);
-  }
+  const displayPrefs = localPrefs || preferences;
 
-  if (isLoading) {
+  if (isLoading || !displayPrefs) {
     return (
-      <Card>
+      <Card className="border-[#2a2a2a] bg-[#1a1a1a]">
         <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <LordiconWrapper
-              icon={animations.loading}
-              size={32}
-              color="#FF6B35"
-              state="loop"
-            />
-          </div>
+        <CardContent className="space-y-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-56" />
+                </div>
+                <Skeleton className="h-6 w-10 rounded-full" />
+              </div>
+              {i < 3 && <Separator className="bg-[#2a2a2a]" />}
+            </div>
+          ))}
         </CardContent>
       </Card>
     );
   }
 
-  if (!localPrefs) return null;
+  if (!displayPrefs) return null;
 
   const handleToggle = (category: "email" | "push", key: string) => {
+    const current = displayPrefs;
     setLocalPrefs({
-      ...localPrefs,
+      ...current,
       [category]: {
-        ...localPrefs[category],
-        [key]:
-          !localPrefs[category][
-            key as keyof (typeof localPrefs)[typeof category]
-          ],
+        ...current[category],
+        [key]: !current[category][key as keyof (typeof current)[typeof category]],
       },
     });
   };
 
   const handleSave = () => {
-    updatePreferences.mutate(localPrefs);
+    if (displayPrefs) {
+      updatePreferences.mutate(displayPrefs);
+    }
   };
 
-  const hasChanges = JSON.stringify(preferences) !== JSON.stringify(localPrefs);
+  const hasChanges =
+    preferences &&
+    displayPrefs &&
+    JSON.stringify(preferences) !== JSON.stringify(displayPrefs);
 
   return (
-    <Card>
+    <Card className="border-[#2a2a2a] bg-[#1a1a1a] shadow-lg">
       <CardHeader>
-        <CardTitle>Notification Preferences</CardTitle>
-        <CardDescription>Choose how you want to be notified</CardDescription>
+        <CardTitle className="text-[#f5f0e8] font-playfair">
+          Notification Preferences
+        </CardTitle>
+        <CardDescription className="text-gray-400">
+          Choose how you want to be notified
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Email Notifications */}
         <div>
-          <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-[#f5f0e8] mb-4 flex items-center gap-2">
             <LordiconWrapper
               icon={animations.email}
               size={24}
-              color="#FF6B35"
+              color="#f5c842"
               state="loop"
             />
             Email Notifications
@@ -102,87 +102,103 @@ export function NotificationPreferences() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-digest" className="text-base">
+                <Label
+                  htmlFor="email-digest"
+                  className="text-base text-[#f5f0e8]"
+                >
                   Daily Digest
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Receive a daily summary of new matches and activity
                 </p>
               </div>
               <Switch
                 id="email-digest"
-                checked={localPrefs.email.dailyDigest}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.email.dailyDigest}
                 onCheckedChange={() => handleToggle("email", "dailyDigest")}
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-[#2a2a2a]" />
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-matches" className="text-base">
+                <Label
+                  htmlFor="email-matches"
+                  className="text-base text-[#f5f0e8]"
+                >
                   New Matches
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Get notified when new jobs match your resume
                 </p>
               </div>
               <Switch
                 id="email-matches"
-                checked={localPrefs.email.newMatches}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.email.newMatches}
                 onCheckedChange={() => handleToggle("email", "newMatches")}
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-[#2a2a2a]" />
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-reminders" className="text-base">
+                <Label
+                  htmlFor="email-reminders"
+                  className="text-base text-[#f5f0e8]"
+                >
                   Application Reminders
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Receive reminders to follow up on applications
                 </p>
               </div>
               <Switch
                 id="email-reminders"
-                checked={localPrefs.email.applicationReminders}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.email.applicationReminders}
                 onCheckedChange={() =>
                   handleToggle("email", "applicationReminders")
                 }
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-[#2a2a2a]" />
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-marketing" className="text-base">
+                <Label
+                  htmlFor="email-marketing"
+                  className="text-base text-[#f5f0e8]"
+                >
                   Marketing
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Receive tips, resources, and product updates
                 </p>
               </div>
               <Switch
                 id="email-marketing"
-                checked={localPrefs.email.marketing}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.email.marketing}
                 onCheckedChange={() => handleToggle("email", "marketing")}
               />
             </div>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-[#2a2a2a]" />
 
         {/* Push Notifications */}
         <div>
-          <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-[#f5f0e8] mb-4 flex items-center gap-2">
             <LordiconWrapper
               icon={animations.bell}
               size={24}
-              color="#FF6B35"
+              color="#f5c842"
               state="loop"
             />
             Push Notifications
@@ -190,34 +206,42 @@ export function NotificationPreferences() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="push-matches" className="text-base">
+                <Label
+                  htmlFor="push-matches"
+                  className="text-base text-[#f5f0e8]"
+                >
                   New Matches
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Get instant notifications for new matches
                 </p>
               </div>
               <Switch
                 id="push-matches"
-                checked={localPrefs.push.newMatches}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.push.newMatches}
                 onCheckedChange={() => handleToggle("push", "newMatches")}
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-[#2a2a2a]" />
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="push-updates" className="text-base">
+                <Label
+                  htmlFor="push-updates"
+                  className="text-base text-[#f5f0e8]"
+                >
                   Application Updates
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Get notified when you mark jobs as applied
                 </p>
               </div>
               <Switch
                 id="push-updates"
-                checked={localPrefs.push.applicationUpdates}
+                className="data-[state=checked]:bg-[#f5c842]"
+                checked={displayPrefs.push.applicationUpdates}
                 onCheckedChange={() =>
                   handleToggle("push", "applicationUpdates")
                 }
@@ -229,7 +253,7 @@ export function NotificationPreferences() {
         {hasChanges && (
           <Button
             onClick={handleSave}
-            className="w-full bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-bold"
             disabled={updatePreferences.isPending}
           >
             {updatePreferences.isPending ? (
@@ -237,7 +261,7 @@ export function NotificationPreferences() {
                 <LordiconWrapper
                   icon={animations.loading}
                   size={20}
-                  color="#FFFFFF"
+                  color="#0d0d0d"
                   state="loop"
                 />
                 <span>Saving...</span>

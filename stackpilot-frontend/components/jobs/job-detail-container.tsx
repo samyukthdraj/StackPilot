@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -22,6 +22,14 @@ import { apiClient } from "@/lib/api/client";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { 
+  MapPin, 
+  Globe, 
+  Briefcase, 
+  Clock, 
+  Trophy, 
+  DollarSign
+} from "lucide-react";
 import {
   RadarChart,
   PolarGrid,
@@ -83,7 +91,7 @@ export function JobDetailContainer() {
     setSaving(true);
     try {
       if (isSaved) {
-        await apiClient.delete(`/jobs/saved/${job?.id}`);
+        await apiClient.delete(`/jobs/saved/job/${job?.id}`);
         toast({
           title: "Job removed",
           description: "Job removed from saved list",
@@ -106,6 +114,17 @@ export function JobDetailContainer() {
       setSaving(false);
     }
   };
+
+  const matchData = useMemo(() => {
+    return match
+      ? [
+          { category: "Skill Match", score: match.breakdown.skillMatch },
+          { category: "Keyword Match", score: match.breakdown.keywordScore },
+          { category: "Experience", score: match.breakdown.experienceScore },
+          { category: "Recency", score: match.breakdown.recencyScore },
+        ]
+      : [];
+  }, [match]);
 
   if (jobLoading) {
     return (
@@ -142,60 +161,51 @@ export function JobDetailContainer() {
     );
   }
 
-  const matchData = match
-    ? [
-        { category: "Skill Match", score: match.breakdown.skillMatch },
-        { category: "Keyword Match", score: match.breakdown.keywordScore },
-        { category: "Experience", score: match.breakdown.experienceScore },
-        { category: "Recency", score: match.breakdown.recencyScore },
-      ]
-    : [];
-
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
           <Link
             href="/jobs"
-            className="text-orange-500 hover:text-orange-600 inline-flex items-center gap-2 mb-4"
+            className="text-[#f5c842] hover:text-[#d4a832] inline-flex items-center gap-2 mb-4 font-medium"
           >
             <LordiconWrapper
               icon={animations.arrow}
               size={18}
-              color="#FF6B35"
+              color="#f5c842"
               state="hover"
             />
             Back to Jobs
           </Link>
-          <h1 className="text-3xl font-bold text-navy">{job.title}</h1>
-          <p className="text-xl text-gray-600 mt-2">{job.company}</p>
+          <h1 className="text-3xl font-bold text-[#f5f0e8] font-playfair">{job.title}</h1>
+          <p className="text-xl text-[#a0a0a0] mt-2">{job.company}</p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={handleSave}
             disabled={saving}
-            className={cn(isSaved && "text-orange-500 border-orange-500")}
+            className={cn("flex-1 justify-center items-center bg-[#f5c842] text-[#0d0d0d] hover:bg-[#d4a832] font-semibold border-none whitespace-nowrap", isSaved && "opacity-80")}
           >
             <LordiconWrapper
-              icon={isSaved ? animations.heartFilled : animations.heart}
+              icon="https://cdn.lordicon.com/ulnswmkk.json" // Verified Heart
               size={20}
-              color={isSaved ? "#FF6B35" : "#0A1929"}
-              state="hover"
+              color="#0d0d0d"
+              state={isSaved ? "morph" : "hover"}
               className="mr-2"
             />
             {isSaved ? "Saved" : "Save Job"}
           </Button>
           {job.jobUrl && (
             <Button
-              className="bg-orange-500 hover:bg-orange-600"
+              className="flex-1 justify-center items-center bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold whitespace-nowrap"
               onClick={() => window.open(job.jobUrl, "_blank")}
             >
               <LordiconWrapper
-                icon={animations.external}
+                icon="https://cdn.lordicon.com/wkvacbiw.json" // Verified Build/Tool
                 size={20}
-                color="#FFFFFF"
+                color="#0d0d0d"
                 state="hover"
                 className="mr-2"
               />
@@ -224,14 +234,14 @@ export function JobDetailContainer() {
               </CardContent>
             </Card>
           ) : match ? (
-            <Card className="bg-linear-to-r from-orange-50 to-orange-100/50 border-orange-200">
+            <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
               <CardContent className="p-6">
                 <div className="flex items-start gap-6">
                   <div className="shrink-0">
                     <div className="relative w-24 h-24">
                       <svg className="w-full h-full" viewBox="0 0 100 100">
                         <circle
-                          className="text-gray-200 stroke-current"
+                          className="text-gray-800 stroke-current"
                           strokeWidth="10"
                           fill="transparent"
                           r="40"
@@ -239,7 +249,7 @@ export function JobDetailContainer() {
                           cy="50"
                         />
                         <circle
-                          className="text-orange-500 stroke-current"
+                          className="text-[#f5c842] stroke-current"
                           strokeWidth="10"
                           strokeLinecap="round"
                           fill="transparent"
@@ -255,7 +265,7 @@ export function JobDetailContainer() {
                           y="50"
                           textAnchor="middle"
                           dy="0.3em"
-                          className="text-2xl font-bold fill-navy"
+                          className="text-2xl font-bold fill-white"
                         >
                           {match.score}%
                         </text>
@@ -264,34 +274,34 @@ export function JobDetailContainer() {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-navy mb-3">
+                    <h3 className="text-lg font-semibold text-white mb-3">
                       Match Analysis
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Skill Match</span>
-                          <span className="font-semibold text-navy">
+                          <span className="text-gray-400">Skill Match</span>
+                          <span className="font-semibold text-white">
                             {match.breakdown.skillMatch}%
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-orange-500"
+                            className="h-full bg-[#f5c842]"
                             style={{ width: `${match.breakdown.skillMatch}%` }}
                           />
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Keyword Match</span>
-                          <span className="font-semibold text-navy">
+                          <span className="text-gray-400">Keyword Match</span>
+                          <span className="font-semibold text-white">
                             {match.breakdown.keywordScore}%
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-orange-500"
+                            className="h-full bg-[#f5c842]"
                             style={{
                               width: `${match.breakdown.keywordScore}%`,
                             }}
@@ -309,70 +319,48 @@ export function JobDetailContainer() {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle>Job Details</CardTitle>
+              <CardTitle className="text-[#f5f0e8] font-playfair">Job Details</CardTitle>
             </CardHeader>
+
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Row 1: Location & Country */}
                 {job.location && (
                   <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.location}
-                      size={24}
-                      color="#64748B"
-                      state="morph"
-                    />
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                      <MapPin size={20} />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-600">Location</p>
-                      <p className="font-medium text-navy">{job.location}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Location</p>
+                      <p className="font-semibold text-[#f5f0e8]">{job.location}</p>
                     </div>
                   </div>
                 )}
                 {job.country && (
                   <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.globe}
-                      size={24}
-                      color="#64748B"
-                      state="morph"
-                    />
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                      <Globe size={20} />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-600">Country</p>
-                      <p className="font-medium text-navy uppercase">
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Country</p>
+                      <p className="font-semibold text-[#f5f0e8] uppercase">
                         {job.country}
                       </p>
                     </div>
                   </div>
                 )}
-                {job.salaryMin && job.salaryMax && (
-                  <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.salary}
-                      size={24}
-                      color="#64748B"
-                      state="morph"
-                    />
-                    <div>
-                      <p className="text-sm text-gray-600">Salary</p>
-                      <p className="font-medium text-navy">
-                        ${job.salaryMin.toLocaleString()} - $
-                        {job.salaryMax.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                )}
+
+                {/* Row 2: Job Type & Posted */}
                 {job.jobType && (
                   <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.clock}
-                      size={24}
-                      color="#64748B"
-                      state="morph"
-                    />
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                      <Briefcase size={20} />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-600">Job Type</p>
-                      <p className="font-medium text-navy capitalize">
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Engagement</p>
+                      <p className="font-semibold text-[#f5f0e8] capitalize">
                         {job.jobType.replace("_", " ")}
                       </p>
                     </div>
@@ -380,16 +368,43 @@ export function JobDetailContainer() {
                 )}
                 {job.postedAt && (
                   <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.calendar}
-                      size={24}
-                      color="#64748B"
-                      state="morph"
-                    />
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                      <Clock size={20} />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-600">Posted</p>
-                      <p className="font-medium text-navy">
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Posted</p>
+                      <p className="font-semibold text-[#f5f0e8]">
                         {formatDistanceToNow(new Date(job.postedAt))} ago
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Row 3: Experience & Salary */}
+                <div className="flex items-center gap-3">
+                  <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                    <Trophy size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Experience</p>
+                    <p className="font-semibold text-[#f5f0e8]">
+                      {job.experienceRequiredMin !== undefined && job.experienceRequiredMin !== null
+                        ? `${job.experienceRequiredMin}${job.experienceRequiredMax ? `-${job.experienceRequiredMax}` : "+"} Years`
+                        : "Not Specified"}
+                    </p>
+                  </div>
+                </div>
+
+                {(job.salaryMin !== undefined && job.salaryMax !== undefined && (job.salaryMin > 0 || job.salaryMax > 0)) && (
+                  <div className="flex items-center gap-3">
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-[#f5c842]/10 flex items-center justify-center text-[#f5c842]">
+                      <DollarSign size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">Salary Range</p>
+                      <p className="font-semibold text-[#f5f0e8]">
+                        ${job.salaryMin?.toLocaleString()} - $
+                        {job.salaryMax?.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -398,14 +413,14 @@ export function JobDetailContainer() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle>Job Description</CardTitle>
+              <CardTitle className="text-[#f5f0e8] font-playfair">Job Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-gray max-w-none">
+              <div className="prose prose-invert max-w-none">
                 {job.description?.split("\n").map((paragraph, index) => (
-                  <p key={index} className="text-gray-600">
+                  <p key={index} className="text-[#a0a0a0] leading-relaxed">
                     {paragraph}
                   </p>
                 ))}
@@ -457,22 +472,37 @@ export function JobDetailContainer() {
           </Card>
 
           {match && !matchLoading && (
-            <Card>
+            <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
               <CardHeader>
-                <CardTitle>Match Breakdown</CardTitle>
+                <CardTitle className="text-white">Match Breakdown</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-50">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={matchData}>
-                      <PolarGrid />
-                      <PolarAngleAxis dataKey="category" />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                    <RadarChart 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius="65%" 
+                      data={matchData}
+                      margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                    >
+                      <PolarGrid stroke="#2a2a2a" />
+                      <PolarAngleAxis 
+                        dataKey="category" 
+                        tick={{ fill: "#a0a0a0", fontSize: 10, fontWeight: 500 }} 
+                      />
+                      <PolarRadiusAxis 
+                        angle={30} 
+                        domain={[0, 100]} 
+                        tick={{ fill: "#666", fontSize: 8 }} 
+                        axisLine={false}
+                        tickLine={false}
+                      />
                       <Radar
                         name="Match"
                         dataKey="score"
-                        stroke="#FF6B35"
-                        fill="#FF6B35"
+                        stroke="#f5c842"
+                        fill="#f5c842"
                         fillOpacity={0.3}
                       />
                     </RadarChart>

@@ -1,32 +1,16 @@
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
-import { Resume } from "@/lib/types/api";
 
 interface MatchesHeaderProps {
-  resumes: Resume[];
-  selectedResume: string | null;
-  primaryResumeId?: string;
   showFilters: boolean;
-  onResumeChange: (resumeId: string) => void;
   onFiltersChange: (show: boolean) => void;
   filtersComponent: React.ReactNode;
 }
 
 export function MatchesHeader({
-  resumes,
-  selectedResume,
-  primaryResumeId,
   showFilters,
-  onResumeChange,
   onFiltersChange,
   filtersComponent,
 }: MatchesHeaderProps) {
@@ -40,22 +24,6 @@ export function MatchesHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        <Select
-          value={selectedResume || primaryResumeId}
-          onValueChange={onResumeChange}
-        >
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select resume" />
-          </SelectTrigger>
-          <SelectContent>
-            {resumes.map((resume: Resume) => (
-              <SelectItem key={resume.id} value={resume.id}>
-                {resume.fileName} ({resume.atsScore}%)
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Sheet open={showFilters} onOpenChange={onFiltersChange}>
           <SheetTrigger asChild>
             <Button variant="outline" className="lg:hidden">

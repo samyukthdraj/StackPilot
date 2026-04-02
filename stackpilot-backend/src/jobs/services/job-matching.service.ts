@@ -4,6 +4,8 @@ import { Repository, LessThan } from 'typeorm';
 import { Job } from '../entities/job.entity';
 import { JobMatch } from '../entities/job-match.entity';
 import { Resume } from '../../resumes/entities/resume.entity';
+import { JSearchService } from './jsearch.service';
+import { JobSyncService } from './job-sync.service';
 
 export interface MatchScore {
   jobId: string;
@@ -13,6 +15,7 @@ export interface MatchScore {
     keywordScore: number;
     experienceScore: number;
     recencyScore: number;
+    total: number;
   };
   matchedSkills: string[];
   missingSkills: string[];
@@ -32,6 +35,8 @@ export class JobMatchingService {
     private jobRepository: Repository<Job>,
     @InjectRepository(JobMatch)
     private jobMatchRepository: Repository<JobMatch>,
+    private jsearchService: JSearchService,
+    private jobSyncService: JobSyncService,
   ) {}
 
   calculateMatchScore(resume: Resume, job: Job): MatchScore {
@@ -58,13 +63,20 @@ export class JobMatchingService {
       // Calculate recency score (5% of total)
       const recencyScore = this.calculateRecencyScore(job.postedAt);
 
-      // Final score (weighted)
-      const total = Math.round(
-        skillMatch * 0.6 +
-          keywordScore * 0.25 +
-          experienceScore * 0.1 +
-          recencyScore * 0.05,
-      );
+      // Final score (re-weighted to prioritize user experience and title)
+      let total =
+        skillMatch * 0.30 +
+        experienceScore * 0.50 +
+        keywordScore * 0.15 +
+        recencyScore * 0.05;
+
+      // Hard penalty: If the specific job role/title has no semantic overlap with their past experience, 
+      // heavily slash the total score so it drops below the 60% visibility threshold.
+      if (experienceScore < 20) {
+        total = total * 0.5; 
+      }
+
+      total = Math.round(total);
 
       return {
         jobId: job.id,
@@ -74,6 +86,7 @@ export class JobMatchingService {
           keywordScore: Math.round(keywordScore),
           experienceScore: Math.round(experienceScore),
           recencyScore: Math.round(recencyScore),
+          total: Math.round(total),
         },
         matchedSkills,
         missingSkills,
@@ -88,6 +101,7 @@ export class JobMatchingService {
           keywordScore: 0,
           experienceScore: 0,
           recencyScore: 0,
+          total: 0,
         },
         matchedSkills: [],
         missingSkills: [],
@@ -104,7 +118,7 @@ export class JobMatchingService {
     missingSkills: string[];
   } {
     if (!jobSkills.length) {
-      return { skillMatch: 50, matchedSkills: [], missingSkills: [] };
+      return { skillMatch: 0, matchedSkills: [], missingSkills: [] };
     }
 
     const resumeSkillSet = new Set(resumeSkills.map((s) => s.toLowerCase()));
@@ -133,7 +147,7 @@ export class JobMatchingService {
     resumeText: string,
     jobDescription: string,
   ): number {
-    if (!jobDescription) return 50;
+    if (!jobDescription) return 0;
 
     const resumeWords = new Set(
       resumeText
@@ -149,7 +163,7 @@ export class JobMatchingService {
         .filter((w) => w.length > 3 && !this.isCommonWord(w)),
     );
 
-    if (descriptionWords.size === 0) return 50;
+    if (descriptionWords.size === 0) return 0;
 
     const matchedKeywords = Array.from(descriptionWords).filter((word) =>
       resumeWords.has(word),
@@ -165,10 +179,10 @@ export class JobMatchingService {
     experience: ExperienceItem[],
     jobTitle: string,
   ): number {
-    if (!experience.length) return 30;
+    if (!experience.length) return 0;
 
     const jobTitleKeywords = jobTitle.toLowerCase().split(/\W+/);
-    if (jobTitleKeywords.length === 0) return 30;
+    if (jobTitleKeywords.length === 0) return 0;
 
     let maxRelevance = 0;
 
@@ -244,6 +258,43 @@ export class JobMatchingService {
     limit: number = 20,
   ): Promise<MatchScore[]> {
     try {
+      // Fetch some real-time jobs based on top resume skills first
+      let searchQuery = '';
+      const exp = resume.structuredData?.experience;
+      const skills = resume.structuredData?.skills;
+
+      // Prioritize the most recent job title as the main target role
+      if (exp && exp.length > 0 && exp[0].title) {
+        searchQuery = exp[0].title;
+        // Add the top skill to make the search more precise
+        if (skills && skills.length > 0) {
+          searchQuery += ` ${skills[0]}`;
+        }
+      } else if (skills && skills.length > 0) {
+        searchQuery = skills.slice(0, 3).join(' ');
+      }
+
+      if (searchQuery) {
+        try {
+          const jJobs = await this.jsearchService.searchJobs(
+            searchQuery,
+            'us',
+          );
+
+          if (jJobs && jJobs.length > 0) {
+            // Save them to local DB so calculating match works easily
+            for (const jSearchJob of jJobs.slice(0, 30)) {
+              await this.jobSyncService.saveJob(jSearchJob as any, 'us');
+            }
+          }
+        } catch (e) {
+          this.logger.error(
+            'Failed to pre-fetch real-time jobs from Adzuna:',
+            e,
+          );
+        }
+      }
+
       // Get recent jobs (last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -261,6 +312,26 @@ export class JobMatchingService {
       const matches: MatchScore[] = [];
 
       for (const job of jobs) {
+        // Self-healing: if experience is missing, try to re-extract it from the stored description
+        if (job.experienceRequiredMin === null || job.experienceRequiredMin === undefined) {
+          const extracted = this.jobSyncService.extractExperienceFromDescription(
+            job.description || '',
+            job.title,
+          );
+          if (extracted.min !== undefined) {
+            job.experienceRequiredMin = extracted.min;
+            job.experienceRequiredMax = extracted.max;
+            // Update DB asynchronously so we don't delay the response
+            this.jobRepository
+              .update(job.id, {
+                experienceRequiredMin: extracted.min,
+                experienceRequiredMax: extracted.max,
+              })
+              .catch((err) =>
+                this.logger.error(`Failed to self-heal exp for job ${job.id}`, err),
+              );
+          }
+        }
         const match = this.calculateMatchScore(resume, job);
         matches.push(match);
       }
@@ -283,11 +354,21 @@ export class JobMatchingService {
         },
       });
 
+      // Sanitize score and breakdown to prevent database "Value is out of range" or JSON errors
+      const sanitizedScore = isFinite(match.score) ? match.score : 0;
+      const sanitizedBreakdown = {
+        skillMatch: isFinite(match.breakdown.skillMatch) ? match.breakdown.skillMatch : 0,
+        keywordScore: isFinite(match.breakdown.keywordScore) ? match.breakdown.keywordScore : 0,
+        experienceScore: isFinite(match.breakdown.experienceScore) ? match.breakdown.experienceScore : 0,
+        recencyScore: isFinite(match.breakdown.recencyScore) ? match.breakdown.recencyScore : 0,
+        total: isFinite(match.breakdown.total ?? match.score) ? (match.breakdown.total ?? match.score) : 0,
+      };
+
       if (existingMatch) {
         // Update existing match
-        await this.jobMatchRepository.update(existingMatch.id, {
-          score: match.score,
-          scoreBreakdown: match.breakdown,
+        await this.jobMatchRepository.update({ id: existingMatch.id }, {
+          score: sanitizedScore,
+          scoreBreakdown: sanitizedBreakdown,
           matchedSkills: match.matchedSkills,
           missingSkills: match.missingSkills,
           viewed: false, // Reset viewed status on new match
@@ -297,8 +378,8 @@ export class JobMatchingService {
         const jobMatch = this.jobMatchRepository.create({
           userId,
           jobId: match.jobId,
-          score: match.score,
-          scoreBreakdown: match.breakdown,
+          score: sanitizedScore,
+          scoreBreakdown: sanitizedBreakdown,
           matchedSkills: match.matchedSkills,
           missingSkills: match.missingSkills,
         });

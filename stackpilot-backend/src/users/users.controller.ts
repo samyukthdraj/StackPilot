@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Body, Post } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserId } from '../auth/user-id.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Resume } from '../resumes/entities/resume.entity';
 import { JobMatch } from '../jobs/entities/job-match.entity';
 import { SavedJob } from '../jobs/entities/saved-job.entity';
+import { User } from './user.entity';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -17,6 +18,8 @@ export class UsersController {
     private jobMatchRepository: Repository<JobMatch>,
     @InjectRepository(SavedJob)
     private savedJobRepository: Repository<SavedJob>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   @Get('dashboard-stats')
@@ -169,7 +172,7 @@ export class UsersController {
     }
 
     // Fill in resume scans
-    resumes.forEach((r) => {
+    resumes.forEach((r: { date: string; count: string }) => {
       const dateStr = new Date(r.date).toISOString().split('T')[0];
       const existing = activityMap.get(dateStr);
       if (existing) {
@@ -178,7 +181,7 @@ export class UsersController {
     });
 
     // Fill in matches
-    matches.forEach((m) => {
+    matches.forEach((m: { date: string; count: string }) => {
       const dateStr = new Date(m.date).toISOString().split('T')[0];
       const existing = activityMap.get(dateStr);
       if (existing) {
@@ -187,7 +190,7 @@ export class UsersController {
     });
 
     // Fill in saves
-    saved.forEach((s) => {
+    saved.forEach((s: { date: string; count: string }) => {
       const dateStr = new Date(s.date).toISOString().split('T')[0];
       const existing = activityMap.get(dateStr);
       if (existing) {
@@ -199,5 +202,99 @@ export class UsersController {
     return Array.from(activityMap.entries())
       .map(([date, data]) => ({ date, ...data }))
       .sort((a, b) => a.date.localeCompare(b.date));
+  }
+  @Get('notifications')
+  async getNotifications(@UserId() userId: string) {
+    // For now, return dynamic notifications based on existing data
+    const notifications: Array<{
+      id: string;
+      title: string;
+      message: string;
+      type: 'info' | 'success' | 'warning' | 'error';
+      timestamp: Date;
+      read: boolean;
+    }> = [];
+
+    // Check for high ATS score resumes
+    const highAtsResumes = await this.resumeRepository.find({
+      where: { userId },
+      order: { atsScore: 'DESC' },
+      take: 2,
+    });
+
+    highAtsResumes.forEach((resume) => {
+      if (resume.atsScore && resume.atsScore >= 80) {
+        notifications.push({
+          id: `ats-${resume.id}`,
+          title: 'High ATS Score!',
+          message: `Your resume "${resume.fileName}" has a great score of ${resume.atsScore}%.`,
+          type: 'success',
+          timestamp: resume.updatedAt,
+          read: false,
+        });
+      }
+    });
+
+    // Check for recently found matches
+    const latestMatches = await this.jobMatchRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: 5,
+    });
+
+    if (latestMatches.length > 0) {
+      notifications.push({
+        id: 'matches-new',
+        title: 'New Matches Found',
+        message: `We found ${latestMatches.length} new jobs that match your profile.`,
+        type: 'info',
+        timestamp: latestMatches[0].createdAt,
+        read: false,
+      });
+    }
+
+    return notifications.sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+    );
+  }
+
+  @Get('profile/notification-settings')
+  async getNotificationSettings(@UserId() userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['notificationPreferences'],
+    });
+
+    return (
+      user?.notificationPreferences || {
+        email: {
+          dailyDigest: true,
+          newMatches: true,
+          applicationReminders: true,
+          marketing: false,
+        },
+        push: {
+          newMatches: true,
+          applicationUpdates: true,
+        },
+      }
+    );
+  }
+
+  @Post('profile/notification-settings')
+  async updateNotificationSettings(
+    @UserId() userId: string,
+    @Body() preferences: Record<string, any>,
+  ) {
+    await this.userRepository.update(userId, {
+      notificationPreferences: preferences as any,
+    });
+    return { success: true };
+  }
+
+  @Post('profile/update-name')
+  async updateName(@UserId() userId: string, @Body('name') name: string) {
+    await this.userRepository.update(userId, { name });
+    return { success: true, name };
   }
 }

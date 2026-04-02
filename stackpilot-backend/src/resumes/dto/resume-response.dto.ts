@@ -12,7 +12,11 @@ export class ResumeResponseDto {
     keywordDensity: number;
     actionVerbs: number;
     total: number;
+    feedback?: string;
+    strengths?: string[];
+    suggestions?: string[];
   };
+  targetJobDescription?: string;
   structuredData?: StructuredResumeData;
   isPrimary: boolean;
   version: number;
@@ -25,6 +29,7 @@ export class ResumeResponseDto {
       fileName: resume.fileName,
       atsScore: resume.atsScore,
       scoreBreakdown: resume.scoreBreakdown,
+      targetJobDescription: resume.targetJobDescription,
       structuredData: resume.structuredData,
       isPrimary: resume.isPrimary,
       version: resume.version,

@@ -12,12 +12,16 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
+import { Trash2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { animations } from "@/public/icons/lordicon";
 import { apiClient } from "@/lib/api/client";
 import { Resume } from "@/lib/types/api";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +36,7 @@ import { toast } from "@/components/ui/use-toast";
 
 export function ResumesListContainer() {
   const router = useRouter();
+  const { user } = useAuth();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -92,156 +97,171 @@ export function ResumesListContainer() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <LordiconWrapper
-          icon={animations.loading}
-          size={64}
-          color="#FF6B35"
-          state="loop"
-        />
+  // Standardized loading state with Skeletons
+  const renderLoading = () => (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-end">
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Skeleton className="h-12 w-48 rounded-full" />
       </div>
-    );
-  }
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-64 w-full rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (isLoading) return renderLoading();
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-navy">Your Resumes</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold" style={{ color: "#f5f0e8", fontFamily: "'Playfair Display', serif" }}>Your Resumes</h1>
+          <p className="mt-2" style={{ color: "#a0a0a0" }}>
             Manage and track all your uploaded resumes
           </p>
         </div>
+        <Link href="/resumes/upload">
+          <Button className="bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none">
+            Upload Resume
+          </Button>
+        </Link>
       </div>
 
       {resumes.length === 0 ? (
-        <Card className="p-12 text-center">
-          <LordiconWrapper
-            icon={animations.empty}
-            size={96}
-            color="#94A3B8"
-            state="loop"
-          />
-          <h3 className="text-xl font-semibold text-navy mt-6">
-            No resumes yet
-          </h3>
-          <p className="text-gray-600 mt-2">
-            Upload your first resume to get started with ATS analysis and job
-            matching.
-          </p>
-          <Link href="/resumes/upload">
-            <Button className="mt-6 bg-orange-500 hover:bg-orange-600">
-              Upload Resume
-            </Button>
-          </Link>
-        </Card>
+        <EmptyState
+          title="No resumes yet"
+          description="Upload your first resume to get started with ATS analysis and personalized job matching."
+          icon={animations.resume}
+          actionLabel="Upload Resume"
+          actionHref="/resumes/upload"
+        />
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {resumes.map((resume) => (
-            <Card key={resume.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <LordiconWrapper
-                      icon={animations.resume}
-                      size={40}
-                      color="#0A1929"
-                      state="morph"
-                    />
-                    <div>
-                      <CardTitle className="text-lg truncate max-w-37.5">
+            <Card key={resume.id} className="flex flex-col bg-[#1a1a1a] border-[#2a2a2a] hover:border-[#f5c842]/30 transition-all duration-300 group">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <Avatar className="h-10 w-10 border border-[#2a2a2a] bg-[#0d0d0d] group-hover:border-[#f5c842]/50 transition-colors shrink-0">
+                      <AvatarFallback className="bg-transparent text-[#f5c842] font-bold">
+                        {user?.name?.[0]?.toUpperCase() || resume.fileName?.[0]?.toUpperCase() || "R"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle 
+                        className="text-lg font-playfair text-[#f5f0e8] truncate" 
+                        title={resume.fileName}
+                      >
                         {resume.fileName}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-[#64748b] text-xs">
                         {formatDistanceToNow(new Date(resume.createdAt))} ago
                       </CardDescription>
                     </div>
                   </div>
-                  {resume.isPrimary && (
-                    <Badge className="bg-orange-500">Primary</Badge>
+                  {resume.isPrimary ? (
+                    <Badge className="bg-[#f5c842] text-[#0d0d0d] font-bold border-none shrink-0 shadow-[0_0_10px_rgba(245,200,66,0.2)]">
+                      Primary
+                    </Badge>
+                  ) : (
+                    <div className="h-6 w-16" /> // Spacer to match badge height
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              
+              <CardContent className="flex-1 space-y-5">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-gray-600">ATS Score</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-orange-500 rounded-full"
-                            style={{ width: `${resume.atsScore || 0}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-sm font-semibold text-navy">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold">ATS Score</p>
+                      <span className="text-xs font-bold text-[#f5f0e8]">
                         {resume.atsScore || 0}%
                       </span>
                     </div>
+                    <div className="h-1.5 rounded-full bg-[#0d0d0d] border border-[#2a2a2a] overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                        style={{ 
+                          width: `${resume.atsScore || 0}%`, 
+                          backgroundColor: "#f5c842",
+                          boxShadow: "0 0 8px rgba(245,200,66,0.4)"
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  {resume.structuredData?.skills && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Top Skills</p>
-                      <div className="flex flex-wrap gap-1">
+                  {/* Skills Section with Fixed Height for Alignment */}
+                  <div className="min-h-[64px]">
+                    <p className="text-[10px] uppercase tracking-widest text-[#666] font-bold mb-2">Top Skills</p>
+                    {resume.structuredData?.skills && resume.structuredData.skills.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
                         {resume.structuredData.skills
                           .slice(0, 3)
                           .map((skill, i) => (
                             <Badge
                               key={i}
                               variant="secondary"
-                              className="text-xs"
+                              className="text-[10px] bg-[#0d0d0d] text-[#f5f0e8] border border-[#2a2a2a] hover:border-[#f5c842]/40 transition-colors"
                             >
                               {skill}
                             </Badge>
                           ))}
                         {resume.structuredData.skills.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-[10px] bg-[#0d0d0d] text-[#f5c842] border border-[#2a2a2a]">
                             +{resume.structuredData.skills.length - 3}
                           </Badge>
                         )}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-[#444] italic">No skills extracted</p>
+                    )}
+                  </div>
 
-                  <p className="text-xs text-gray-600">
-                    Version {resume.version} • Updated{" "}
-                    {formatDistanceToNow(new Date(resume.updatedAt))} ago
-                  </p>
+                  <div className="pt-2 border-t border-[#2a2a2a]/50">
+                    <p className="text-[10px] text-[#444] font-medium tracking-wide">
+                      VERSION {resume.version} • UPDATED{" "}
+                      {formatDistanceToNow(new Date(resume.updatedAt)).toUpperCase()} AGO
+                    </p>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-2">
+
+              <CardFooter className="pt-4 border-t border-[#2a2a2a] flex gap-2 items-center bg-[#0d0d0d]/30">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-9 text-xs bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8] hover:bg-[#2a2a2a] hover:text-[#f5c842] transition-all"
                   onClick={() => router.push(`/resumes/${resume.id}`)}
                 >
-                  View
+                  View Detail
                 </Button>
-                {!resume.isPrimary && (
+                
+                {!resume.isPrimary ? (
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 h-9 text-xs bg-[#f5c842] border-none text-[#0d0d0d] font-bold hover:bg-[#d4a832] transition-all"
                     onClick={() => handleSetPrimary(resume.id)}
                   >
                     Set Primary
                   </Button>
+                ) : (
+                  <div className="flex-1 h-9 rounded-md bg-[#0d0d0d]/50 border border-[#2a2a2a]/50 flex items-center justify-center text-[10px] text-[#444] uppercase font-bold tracking-widest">
+                    ACTIVE SOURCE
+                  </div>
                 )}
+                
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  className="shrink-0 w-9 h-9 bg-transparent border-[#2a2a2a] hover:border-red-500/50 hover:bg-red-500/10 group/delete transition-all"
                   onClick={() => setDeleteId(resume.id)}
                 >
-                  <LordiconWrapper
-                    icon={animations.delete}
-                    size={20}
-                    color="#EF4444"
-                    state="hover"
-                  />
+                  <Trash2 className="w-4 h-4 text-[#666] group-hover/delete:text-red-500 transition-colors" />
                 </Button>
               </CardFooter>
             </Card>

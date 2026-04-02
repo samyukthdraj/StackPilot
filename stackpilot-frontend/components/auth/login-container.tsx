@@ -24,7 +24,7 @@ const loginSchema = z.object({
     .string()
     .min(1, "Email is required")
     .email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -50,7 +50,11 @@ export function LoginContainer() {
 
   useEffect(() => {
     reset({ email: "", password: "" });
-  }, [reset]);
+    const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [reset, router]);
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);

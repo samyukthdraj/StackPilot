@@ -1,4 +1,4 @@
-import { IsOptional, IsBoolean, IsObject } from 'class-validator';
+import { IsOptional, IsBoolean, IsObject, IsString } from 'class-validator';
 import { StructuredResumeData } from '../entities/resume.entity';
 
 export class UpdateResumeDto {
@@ -9,4 +9,8 @@ export class UpdateResumeDto {
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
+
+  @IsOptional()
+  @IsString()
+  targetJobDescription?: string;
 }

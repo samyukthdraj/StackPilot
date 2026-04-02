@@ -8,11 +8,11 @@ import { SavedJob } from './entities/saved-job.entity';
 import { JobsController } from './controllers/jobs.controller';
 import { SavedJobsController } from './controllers/saved-jobs.controller';
 import { JobsService } from './services/jobs.service';
-import { AdzunaService } from './services/adzuna.service';
 import { JobSyncService } from './services/job-sync.service';
 import { JobMatchingService } from './services/job-matching.service';
 import { SavedJobsService } from './services/saved-jobs.service';
 import { HttpWrapperService } from './services/http-wrapper.service';
+import { JSearchService } from './services/jsearch.service';
 import { ResumeModule } from '../resumes/resume.module';
 
 @Module({
@@ -28,11 +28,11 @@ import { ResumeModule } from '../resumes/resume.module';
   controllers: [SavedJobsController, JobsController],
   providers: [
     JobsService,
-    AdzunaService,
     JobSyncService,
     JobMatchingService,
     SavedJobsService,
     HttpWrapperService,
+    JSearchService,
   ],
   exports: [JobsService, JobMatchingService, SavedJobsService, JobSyncService],
 })

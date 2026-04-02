@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 interface MatchFilters {
   minScore: number;
   maxScore: number;
-  sortBy: "score" | "date" | "company";
+  sortBy: "score" | "date" | "company" | "role";
   sortOrder: "asc" | "desc";
   showMatchedSkills: boolean;
   showMissingSkills: boolean;

@@ -40,7 +40,7 @@ export function DangerZone() {
 
     setIsDeleting(true);
     try {
-      await apiClient.delete("/user/account");
+      await apiClient.delete("/auth/account");
       toast({
         title: "Account deleted",
         description: "Your account has been permanently deleted.",
@@ -61,31 +61,31 @@ export function DangerZone() {
 
   return (
     <>
-      <Card className="border-red-200">
+      <Card className="border-[#2a2a2a] bg-[#1a1a1a] shadow-lg">
         <CardHeader>
-          <CardTitle className="text-red-600 flex items-center gap-2">
+          <CardTitle className="text-[#f5f0e8] font-playfair flex items-center gap-2">
             <LordiconWrapper
               icon={animations.warning}
               size={24}
-              color="#EF4444"
+              color="#f5c842"
               state="loop"
             />
             Danger Zone
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-400">
             Irreversible actions that will affect your account
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+          <div className="flex items-center justify-between p-6 bg-[#0d0d0d] border border-red-900/20 rounded-xl shadow-inner">
             <div>
-              <h4 className="font-semibold text-red-700">Delete Account</h4>
-              <p className="text-sm text-red-600">
+              <h4 className="font-semibold text-red-500 text-lg">Delete Account</h4>
+              <p className="text-sm text-gray-400 mt-1">
                 Permanently delete your account and all associated data
               </p>
             </div>
             <Button
-              variant="destructive"
+              className="bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-bold px-6"
               onClick={() => setShowDeleteDialog(true)}
             >
               Delete Account
@@ -95,34 +95,38 @@ export function DangerZone() {
       </Card>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-2xl font-playfair text-[#f5f0e8]">
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400 text-base">
               This action cannot be undone. This will permanently delete your
               account and remove all your data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="py-4">
-            <Label htmlFor="confirm">
-              Type <span className="font-bold">DELETE</span> to confirm
+          <div className="py-6 space-y-3">
+            <Label htmlFor="confirm" className="text-[#f5f0e8]">
+              Type <span className="font-bold text-[#f5c842]">DELETE</span> to confirm
             </Label>
             <Input
               id="confirm"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="DELETE"
-              className="mt-2"
+              className="bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] focus:border-[#f5c842]/50 placeholder:text-gray-600"
             />
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-transparent border-[#2a2a2a] text-[#f5f0e8] hover:bg-[#2a2a2a]">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAccount}
               disabled={confirmText !== "DELETE" || isDeleting}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
             >
               {isDeleting ? (
                 <div className="flex items-center gap-2">

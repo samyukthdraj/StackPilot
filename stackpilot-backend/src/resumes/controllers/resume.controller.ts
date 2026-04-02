@@ -29,7 +29,7 @@ export class ResumeController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  @UsageLimit(UsageAction.RESUME_SCAN, 3, 'day')
+  @UsageLimit(UsageAction.RESUME_SCAN, 99, 'day')
   async uploadResume(
     @UserId() userId: string,
     @UploadedFile() file: MulterFile,
@@ -68,6 +68,14 @@ export class ResumeController {
   ): Promise<ResumeResponseDto> {
     const resume = await this.resumeService.getResumeById(id, userId);
     return ResumeResponseDto.fromEntity(resume);
+  }
+
+  @Get(':id/file')
+  async getResumeFile(
+    @Param('id') id: string,
+    @UserId() userId: string,
+  ): Promise<{ fileData: string; fileName: string; mimeType: string }> {
+    return this.resumeService.getResumeFileData(id, userId);
   }
 
   @Patch(':id')

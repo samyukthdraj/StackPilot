@@ -9,8 +9,10 @@ export function useMatches(resumeId?: string) {
   return useQuery({
     queryKey: ["matches", resumeId],
     queryFn: async () => {
-      const params = resumeId ? `?resumeId=${resumeId}` : "";
-      const response = await apiClient.get(`/jobs/matches${params}`);
+      const resumeParam = resumeId ? `resumeId=${resumeId}` : "";
+      const limitParam = "limit=100";
+      const params = [resumeParam, limitParam].filter(Boolean).join("&");
+      const response = await apiClient.get(`/jobs/matches?${params}`);
       return response.data as JobMatch[];
     },
     enabled: isAuthenticated,
@@ -31,25 +33,34 @@ export function useMatchDetails(jobId: string, resumeId?: string) {
   });
 }
 
-export function useMatchStats() {
+export function useMatchStats(resumeId?: string) {
   const { isAuthenticated } = useAuth();
 
   return useQuery({
-    queryKey: ["match-stats"],
+    queryKey: ["match-stats", resumeId],
     queryFn: async () => {
-      const matches = await apiClient.get("/jobs/matches?limit=100");
-      const data = matches.data as JobMatch[];
+      // Get all matches for comprehensive stats
+      const resumeParam = resumeId ? `resumeId=${resumeId}` : "";
+      const limitParam = "limit=100";
+      const params = [resumeParam, limitParam].filter(Boolean).join("&");
+      
+      const response = await apiClient.get(`/jobs/matches?${params}`);
+      const allData = response.data as JobMatch[];
+      
+      // Filter for primary data metrics (Score > 60%)
+      const data = allData.filter(m => m.score > 60);
 
       const stats = {
-        total: data.length,
-        averageScore: Math.round(
-          data.reduce((acc, m) => acc + m.score, 0) / data.length,
-        ),
+        total: data.length, // Matches above 60%
+        allTotal: allData.length, // Total pool of 100 jobs scanned
+        averageScore: data.length > 0
+          ? Math.round(data.reduce((acc, m) => acc + m.score, 0) / data.length)
+          : 0,
         byScore: {
-          excellent: data.filter((m) => m.score >= 80).length,
-          good: data.filter((m) => m.score >= 60 && m.score < 80).length,
-          fair: data.filter((m) => m.score >= 40 && m.score < 60).length,
-          poor: data.filter((m) => m.score < 40).length,
+          excellent: allData.filter((m) => m.score >= 80).length,
+          good: allData.filter((m) => m.score >= 60 && m.score < 80).length,
+          fair: allData.filter((m) => m.score >= 40 && m.score < 60).length,
+          poor: allData.filter((m) => m.score < 40).length,
         },
         topSkills: getTopSkills(data),
         commonMissingSkills: getCommonMissingSkills(data),

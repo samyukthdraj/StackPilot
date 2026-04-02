@@ -33,12 +33,28 @@ export class JobsController {
     @Query('role') role?: string,
     @Query('days') days?: string,
     @Query('search') search?: string,
+    @Query('companies') companies?: string | string[],
+    @Query('locations') locations?: string | string[],
+    @Query('jobTypes') jobTypes?: string | string[],
+    @Query('salaryMin') salaryMin?: string,
+    @Query('experienceMin') experienceMin?: string,
+    @Query('experienceMax') experienceMax?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
   ) {
     const filters: {
       country?: string;
       title?: string;
       postedAt?: Date;
       search?: string;
+      companies?: string[];
+      locations?: string[];
+      jobTypes?: string[];
+      salaryMin?: number;
+      experienceMin?: number;
+      experienceMax?: number;
+      limit?: number;
+      offset?: number;
     } = {};
 
     if (country) filters.country = country;
@@ -49,7 +65,30 @@ export class JobsController {
       filters.postedAt = daysAgo;
     }
     if (search) filters.search = search;
+    
+    if (companies) {
+      filters.companies = Array.isArray(companies) ? companies : [companies];
+    }
+    if (locations) {
+      filters.locations = Array.isArray(locations) ? locations : [locations];
+    }
+    if (jobTypes) {
+      filters.jobTypes = Array.isArray(jobTypes) ? jobTypes : [jobTypes];
+    }
+    if (salaryMin) {
+      filters.salaryMin = parseInt(salaryMin, 10);
+    }
+    if (experienceMin) {
+      filters.experienceMin = parseInt(experienceMin, 10);
+    }
+    if (experienceMax) {
+      filters.experienceMax = parseInt(experienceMax, 10);
+    }
+    
+    if (limit) filters.limit = parseInt(limit, 10);
+    if (offset) filters.offset = parseInt(offset, 10);
 
+    this.logger.debug(`[CONTROLLER] getJobs called with query params: ${JSON.stringify(filters)}`);
     return this.jobsService.findJobs(filters);
   }
 

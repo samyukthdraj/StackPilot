@@ -40,6 +40,36 @@ export class User {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
+  @Column({
+    name: 'notification_preferences',
+    type: 'jsonb',
+    nullable: true,
+    default: {
+      email: {
+        dailyDigest: true,
+        newMatches: true,
+        applicationReminders: true,
+        marketing: false,
+      },
+      push: {
+        newMatches: true,
+        applicationUpdates: true,
+      },
+    },
+  })
+  notificationPreferences: {
+    email: {
+      dailyDigest: boolean;
+      newMatches: boolean;
+      applicationReminders: boolean;
+      marketing: boolean;
+    };
+    push: {
+      newMatches: boolean;
+      applicationUpdates: boolean;
+    };
+  };
+
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

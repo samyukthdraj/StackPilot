@@ -31,7 +31,7 @@ const loginSchema = z.object({
     .string()
     .min(1, "Email is required")
     .email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 const registerSchema = z
@@ -41,7 +41,7 @@ const registerSchema = z
       .string()
       .min(1, "Email is required")
       .email("Please enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(1, "Password is required"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -204,8 +204,16 @@ export function PremiumLandingContainer() {
     <PremiumWrapper>
       <PremiumCursor />
       <PremiumNavbar
-        onLoginClick={() => setShowLogin(true)}
-        onRegisterClick={() => setShowRegister(true)}
+        onLoginClick={() => {
+          const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+          if (token) router.push("/dashboard");
+          else setShowLogin(true);
+        }}
+        onRegisterClick={() => {
+          const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+          if (token) router.push("/dashboard");
+          else setShowRegister(true);
+        }}
       />
 
       {showLogin && (
@@ -498,14 +506,23 @@ export function PremiumLandingContainer() {
       )}
 
       <PremiumHero
-        onGetStarted={() => setShowRegister(true)}
-        onWatchDemo={() => setShowLogin(true)}
+        onGetStarted={() => {
+          if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
+          else setShowRegister(true);
+        }}
+        onWatchDemo={() => {
+          if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
+          else setShowLogin(true);
+        }}
       />
       <PremiumMarquee />
       <PremiumFeatures />
       <PremiumStats />
       <PremiumHowItWorks />
-      <PremiumCTA onGetStarted={() => setShowRegister(true)} />
+      <PremiumCTA onGetStarted={() => {
+        if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
+        else setShowRegister(true);
+      }} />
       <PremiumFooter />
     </PremiumWrapper>
   );

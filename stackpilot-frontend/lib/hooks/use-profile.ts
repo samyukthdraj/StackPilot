@@ -132,7 +132,7 @@ export function useNotificationPreferences() {
     queryFn: async () => {
       // This would come from your backend - using defaults for now
       try {
-        const response = await apiClient.get("/user/notifications");
+        const response = await apiClient.get("/users/profile/notification-settings");
         return response.data as NotificationPreferences;
       } catch {
         // Return default preferences on error
@@ -159,7 +159,7 @@ export function useUpdateNotificationPreferences() {
 
   return useMutation({
     mutationFn: async (preferences: NotificationPreferences) => {
-      await apiClient.put("/user/notifications", preferences);
+      await apiClient.post("/users/profile/notification-settings", preferences);
     },
     onSuccess: () => {
       toast({
@@ -178,6 +178,49 @@ export function useUpdateNotificationPreferences() {
         errorMessage = error.message;
       }
 
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateName() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const response = await apiClient.post("/users/profile/update-name", {
+        name,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Update local storage user object
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.name = data.name;
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Trigger auth sync across components
+        window.dispatchEvent(new Event("storage"));
+      }
+
+      toast({
+        title: "Profile updated",
+        description: "Your name has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (error: unknown) => {
+      let errorMessage = "Failed to update name";
+      if (error instanceof AxiosError && error.response?.data) {
+        const data = error.response.data as ErrorResponse;
+        errorMessage = data.message || errorMessage;
+      }
       toast({
         title: "Error",
         description: errorMessage,

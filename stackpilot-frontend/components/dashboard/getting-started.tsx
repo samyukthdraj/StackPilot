@@ -32,23 +32,30 @@ const defaultSteps: GettingStartedStep[] = [
 
 export function GettingStarted({ steps = defaultSteps }: GettingStartedProps) {
   return (
-    <Card className="bg-linear-to-r from-orange-50 to-orange-100 border-orange-200">
-      <CardHeader>
-        <CardTitle className="text-orange-900">
+    <Card 
+      className="border relative overflow-hidden group"
+      style={{ background: "linear-gradient(to right, #1a1a1a, #0d0d0d)", borderColor: "#2a2a2a" }}
+    >
+      <div className="absolute inset-0 bg-[#f5c842]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <CardHeader className="relative z-10">
+        <CardTitle style={{ color: "#f5f0e8", fontFamily: "'Playfair Display', serif" }}>
           Get the most out of StackPilot
         </CardTitle>
-        <CardDescription className="text-orange-700">
+        <CardDescription style={{ color: "#a0a0a0" }}>
           Follow these steps to optimize your job search
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="relative z-10">
+        <div className="space-y-4">
           {steps.map((step) => (
-            <div key={step.number} className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">
+            <div key={step.number} className="flex items-center gap-4 transition-transform hover:translate-x-2 duration-300">
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-[0_0_15px_rgba(245,200,66,0.2)]"
+                style={{ backgroundColor: "#f5c842", color: "#0d0d0d" }}
+              >
                 {step.number}
               </div>
-              <p className="text-sm text-gray-700">{step.text}</p>
+              <p className="text-sm font-medium" style={{ color: "#f5f0e8" }}>{step.text}</p>
             </div>
           ))}
         </div>

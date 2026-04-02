@@ -61,7 +61,7 @@ export function ResumeDetailContainer() {
           deleted.
         </p>
         <Link href="/resumes">
-          <Button className="mt-6 bg-orange-500 hover:bg-orange-600">
+          <Button className="mt-6 bg-[#f5c842] text-[#0d0d0d] font-semibold hover:bg-[#d4a832] border-none">
             Back to Resumes
           </Button>
         </Link>
@@ -76,8 +76,24 @@ export function ResumeDetailContainer() {
         createdAt={resume.createdAt}
         version={resume.version}
         resumeId={resume.id}
-        onBack={() => router.push("/resumes")}
-        onFindMatches={() => router.push(`/jobs/matches?resumeId=${resume.id}`)}
+        onFindMatches={() => router.push(`/matches?resumeId=${resume.id}`)}
+        onViewPdf={async () => {
+          try {
+            const response = await apiClient.get(`/resumes/${resume.id}/file`);
+            const { fileData, mimeType } = response.data;
+            const byteCharacters = atob(fileData);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+          } catch (error) {
+            console.error("Error viewing PDF:", error);
+          }
+        }}
       />
 
       <ATSScoreOverview

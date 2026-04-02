@@ -20,6 +20,17 @@ html {
   font-family: var(--font-body);
 }
 
+.premium-theme,
+.premium-theme *,
+.premium-theme a,
+.premium-theme button,
+.premium-theme input,
+.premium-theme textarea,
+.premium-theme select,
+.premium-theme [class*="cursor-"] {
+  cursor: none !important;
+}
+
 .premium-page * {
   cursor: none !important;
 }
@@ -51,7 +62,6 @@ html {
 
 .premium-cursor.dark-mode {
   background: #0d0d0d;
-  box-shadow: none;
 }
 
 .premium-cursor-ring {
@@ -69,7 +79,6 @@ html {
 
 .premium-cursor-ring.dark-mode {
   border-color: #0d0d0d;
-  box-shadow: none;
 }
 
 .premium-cursor.hover {
@@ -82,20 +91,17 @@ html {
 
 .premium-cursor.dark-mode.hover {
   border-color: #f5c842;
-  box-shadow: 0 0 20px rgba(245, 196, 66, 0.3);
 }
 
 .premium-cursor-ring.hover {
   width: 60px;
   height: 60px;
-  border-width: 2px;
-  border-color: #f5c842;
+  border: 2px solid #f5c842;
   transform: translate(-50%, -50%);
 }
 
 .premium-cursor-ring.dark-mode.hover {
   border-color: #f5c842;
-  box-shadow: 0 0 20px rgba(245, 196, 66, 0.2);
 }
 
 .cursor-pointer-icon {
@@ -103,10 +109,6 @@ html {
   width: 20px;
   height: 20px;
   animation: pointerPulse 1.5s ease-in-out infinite;
-}
-
-.premium-cursor.dark-mode .cursor-pointer-icon {
-  color: #f5c842;
 }
 
 @keyframes pointerPulse {
@@ -757,14 +759,14 @@ html {
 .premium-page .fixed.z-9999 *,
 .premium-page input,
 .premium-page textarea {
-  cursor: auto !important;
+  cursor: none !important;
 }
 
 .premium-theme .fixed.z-9999,
 .premium-theme .fixed.z-9999 *,
 .premium-theme input,
 .premium-theme textarea {
-  cursor: auto !important;
+  cursor: none !important;
 }
 
 /* Modal Overlay Styling */

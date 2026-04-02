@@ -8,9 +8,11 @@ import { Progress } from "@/components/ui/progress";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
 import { apiClient } from "@/lib/api/client";
+import { Resume } from "@/lib/types/api";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
-import { AxiosError } from "axios"; // Added AxiosError type
+import { AxiosError } from "axios";
+import { ATSScoreOverview } from "@/components/resumes/ats-score-overview";
 
 interface ResumeUploaderProps {
   onSuccess?: (resumeId: string) => void;
@@ -27,6 +29,9 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [setAsPrimary, setSetAsPrimary] = useState(true);
+  const [targetJobDescription, setTargetJobDescription] = useState("");
+  const [uploadedResume, setUploadedResume] = useState<Resume | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -48,14 +53,20 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
 
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadError(null);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("setAsPrimary", String(setAsPrimary));
+    if (targetJobDescription.trim()) {
+      formData.append("targetJobDescription", targetJobDescription.trim());
+    }
+
+    let interval: NodeJS.Timeout | undefined;
 
     try {
       // Simulate progress (since axios doesn't support upload progress by default)
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(interval);
@@ -82,28 +93,88 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
       if (onSuccess) {
         onSuccess(response.data.id);
       } else {
-        router.push(`/resumes/${response.data.id}`);
+        setUploadedResume(response.data);
       }
     } catch (error) {
-      // Properly typed error handling
-      let errorMessage = "Failed to upload resume";
+      // Properly typed error handling for complex enterprise-grade feedback
+      let errorMessage = "An unexpected error occurred during upload.";
+      let detailedIssue = "";
 
-      if (error instanceof AxiosError && error.response?.data) {
-        const data = error.response.data as ErrorResponse;
-        errorMessage = data.message || errorMessage;
+      if (error instanceof AxiosError) {
+        if (!error.response) {
+          // Network error (server down, CORS, or offline)
+          errorMessage = "Network connection failed.";
+          detailedIssue = "The server could not be reached. Please check if your backend is running or your internet is stable.";
+        } else {
+          const status = error.response.status;
+          const data = error.response.data as ErrorResponse;
+          
+          if (status === 413) {
+            errorMessage = "File too large.";
+            detailedIssue = "Your resume exceeds the maximum size allowed by the server.";
+          } else if (status === 401) {
+            errorMessage = "Unauthorized.";
+            detailedIssue = "Your session may have expired. Please log in again.";
+          } else if (status >= 500) {
+            errorMessage = "Server error.";
+            detailedIssue = "Our analysis engine encountered a problem. Our team has been notified.";
+          } else {
+            errorMessage = data.message || "Upload failed.";
+            detailedIssue = "Please ensure the file is a valid PDF and try again.";
+          }
+        }
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
 
       toast({
-        title: "Error",
-        description: errorMessage,
+        title: errorMessage,
+        description: detailedIssue || "Please try again.",
         variant: "destructive",
       });
+      setUploadError(detailedIssue || errorMessage);
     } finally {
       setIsUploading(false);
+      clearInterval(interval);
     }
   };
+
+  if (uploadedResume) {
+    return (
+      <div className="space-y-6">
+        <Card className="p-12 text-center space-y-6">
+          <LordiconWrapper
+            icon={animations.success}
+            size={96}
+            color="#10B981"
+            state="loop"
+          />
+          <h2 className="text-3xl font-bold text-navy">
+            Resume Uploaded Successfully!
+          </h2>
+          <p className="text-gray-600 text-lg">
+            Your resume has been successfully parsed and scored.
+          </p>
+          {uploadedResume.atsScore !== undefined && (
+            <div className="text-left w-full max-w-4xl mx-auto py-4">
+              <ATSScoreOverview 
+                atsScore={uploadedResume.atsScore || 0} 
+                scoreBreakdown={uploadedResume.scoreBreakdown}
+              />
+            </div>
+          )}
+          <Button
+            className="mt-6 bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-bold text-lg py-6 px-8 border-none"
+            onClick={() =>
+              router.push(`/matches?resumeId=${uploadedResume.id}`)
+            }
+          >
+            Find Matching Jobs
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -160,6 +231,18 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
         <Card className="p-6">
           <h3 className="font-semibold text-navy mb-4">Upload Options</h3>
 
+          <div className="space-y-4 mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Target Job Description (Optional)
+            </label>
+            <textarea
+              value={targetJobDescription}
+              onChange={(e) => setTargetJobDescription(e.target.value)}
+              placeholder="Paste the job description here to get a customized ATS score for this specific role..."
+              className="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 resize-y bg-white text-sm"
+            />
+          </div>
+
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -181,19 +264,28 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
               </div>
             )}
 
+            {uploadError && (
+              <div className="text-sm font-semibold text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                Failed: {uploadError}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 onClick={handleUpload}
                 disabled={isUploading}
-                className="flex-1 bg-orange-500 hover:bg-orange-600"
+                className={`flex-1 font-semibold border-none ${uploadError ? "bg-red-500 hover:bg-red-600 text-white" : "bg-[#f5c842] text-[#0d0d0d] hover:bg-[#d4a832]"}`}
               >
-                {isUploading ? "Uploading..." : "Upload Resume"}
+                {isUploading ? "Uploading..." : uploadError ? "Retry Upload" : "Generate ATS Score & Matches"}
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setFile(null)}
+                onClick={() => {
+                  setFile(null);
+                  setUploadError(null);
+                }}
                 disabled={isUploading}
-                className="flex-1"
+                className="flex-1 text-[#f5f0e8] border-[#2a2a2a] hover:bg-[#1a1a1a] hover:text-white"
               >
                 Cancel
               </Button>

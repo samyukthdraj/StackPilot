@@ -10,7 +10,7 @@ export const Progress = React.forwardRef<
     {...props}
   >
     <div
-      className="h-full bg-orange-500 transition-all"
+      className="h-full bg-[#f5c842] transition-all"
       style={{ width: `${value}%` }}
     />
   </div>

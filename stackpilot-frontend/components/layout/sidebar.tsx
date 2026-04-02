@@ -35,12 +35,16 @@ export function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-xl shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl shadow-md border"
+        style={{
+          backgroundColor: "#1a1a1a",
+          borderColor: "#2a2a2a",
+        }}
       >
         {isMobileMenuOpen ? (
-          <X className="h-6 w-6 text-gray-700" />
+          <X className="h-6 w-6" style={{ color: "#f5f0e8" }} />
         ) : (
-          <Menu className="h-6 w-6 text-gray-700" />
+          <Menu className="h-6 w-6" style={{ color: "#f5f0e8" }} />
         )}
       </button>
 
@@ -55,11 +59,15 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={`
-          w-72 bg-white border-r h-screen fixed left-0 top-0 flex flex-col z-40 transition-transform duration-300
+          w-72 border-r h-screen fixed left-0 top-0 flex flex-col z-40 transition-transform duration-300
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
+        style={{
+          backgroundColor: "#0d0d0d",
+          borderColor: "#2a2a2a",
+        }}
       >
-        <div className="p-2 lg:px-6 lg:py-2 border-b">
+        <div className="p-2 lg:px-6 lg:py-2 border-b" style={{ borderColor: "#2a2a2a" }}>
           <button
             onClick={handleLogoClick}
             className="flex items-center gap-2 cursor-pointer transform hover:scale-105 transition-transform duration-300"
@@ -87,11 +95,29 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border ${
                   isActive
-                    ? "bg-orange-50 text-orange-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "font-medium hover:scale-[1.02]"
+                    : "hover:scale-[1.02]"
                 }`}
+                style={{
+                  backgroundColor: isActive ? "rgba(245, 200, 66, 0.1)" : "transparent",
+                  color: isActive ? "#f5c842" : "#f5f0e8",
+                  borderColor: isActive ? "rgba(245, 200, 66, 0.2)" : "transparent",
+                  opacity: isActive ? 1 : 0.8,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.opacity = "1";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.opacity = "0.8";
+                  }
+                }}
               >
                 <Icon className="h-5 w-5" />
                 {item.label}

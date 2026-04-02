@@ -5,7 +5,12 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-// Removed unused Progress import
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
 import { JobMatch, Job } from "@/lib/types/api"; // Added Job type
@@ -47,13 +52,13 @@ export function MatchCard({
     setSaving(true);
     try {
       if (isSaved) {
-        await apiClient.delete(`/jobs/saved/${job.id}`);
+        await apiClient.delete(`/jobs/saved/job/${job?.id}`);
         toast({
           title: "Job removed",
           description: "Job removed from saved list",
         });
       } else {
-        await apiClient.post(`/jobs/saved/${job.id}`, {});
+        await apiClient.post(`/jobs/saved/${job?.id}`, {});
         toast({
           title: "Job saved",
           description: "Job added to your saved list",
@@ -76,15 +81,31 @@ export function MatchCard({
     <Card className={cn("group hover:shadow-lg transition-all", className)}>
       <CardContent className="p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <Link href={`/jobs/${job?.id}`} className="hover:underline">
-              <h3 className="text-lg font-semibold text-navy group-hover:text-orange-500 transition-colors">
-                {job?.title || "Loading..."}
-              </h3>
-            </Link>
-            <p className="text-gray-600 mt-1">{job?.company}</p>
-          </div>
+        <TooltipProvider>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1 min-w-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href={`/jobs/${job?.id}`} className="hover:underline block">
+                    <h3 className="text-lg font-semibold text-navy group-hover:text-[#f5c842] transition-colors line-clamp-1 cursor-help">
+                      {job?.title || "Loading..."}
+                    </h3>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {job?.title}
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-gray-600 mt-1 line-clamp-1 cursor-help">{job?.company}</p>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-[#0d0d0d] border-[#f5c842]/20">
+                  {job?.company}
+                </TooltipContent>
+              </Tooltip>
+            </div>
 
           {/* Score Circle */}
           <div className="relative w-16 h-16">
@@ -123,13 +144,14 @@ export function MatchCard({
                 y="50"
                 textAnchor="middle"
                 dy="0.3em"
-                className="text-lg font-bold fill-navy"
+                className="text-lg font-bold fill-white"
               >
                 {match.score}
               </text>
             </svg>
           </div>
-        </div>
+          </div>
+        </TooltipProvider>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -159,11 +181,19 @@ export function MatchCard({
             <p className="text-xs text-gray-600">Experience</p>
             <p
               className={cn(
-                "text-lg font-semibold",
+                "text-sm font-bold uppercase tracking-tighter truncate",
                 getScoreColor(match.breakdown.experienceScore),
               )}
             >
-              {match.breakdown.experienceScore}%
+              {job?.experienceRequiredMin !== undefined && job?.experienceRequiredMin !== null ? (
+                job.experienceRequiredMin === 0 && !job.experienceRequiredMax ? (
+                   "No Exp Required"
+                ) : (
+                   `${job.experienceRequiredMin}${job.experienceRequiredMax ? `-${job.experienceRequiredMax}` : "+"}yr`
+                )
+              ) : (
+                "Not Specified"
+              )}
             </p>
           </div>
         </div>
@@ -248,7 +278,7 @@ export function MatchCard({
         {/* Action Buttons */}
         <div className="flex gap-2 mt-4 pt-4 border-t">
           <Link href={`/jobs/${job?.id}`} className="flex-1">
-            <Button variant="outline" className="w-full">
+            <Button className="w-full bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none">
               View Details
             </Button>
           </Link>
@@ -257,13 +287,13 @@ export function MatchCard({
             size="icon"
             onClick={handleSave}
             disabled={saving}
-            className={cn(isSaved && "text-orange-500 border-orange-500")}
+            className={cn(isSaved ? "text-[#f5c842] border-[#f5c842]" : "border-gray-600")}
           >
             <LordiconWrapper
-              icon={isSaved ? animations.heartFilled : animations.heart}
+              icon="https://cdn.lordicon.com/ulnswmkk.json" // Verified Heart
               size={20}
-              color={isSaved ? "#FF6B35" : "#0A1929"}
-              state="hover"
+              color={isSaved ? "#f5c842" : "#FFFFFF"}
+              state={isSaved ? "morph" : "hover"}
             />
           </Button>
         </div>

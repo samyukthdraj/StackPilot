@@ -196,7 +196,7 @@ export function ChangePasswordForm() {
 
           <Button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold"
             disabled={isSubmitting}
           >
             {isSubmitting ? (

@@ -26,7 +26,7 @@ const registerSchema = z
       .string()
       .min(1, "Email is required")
       .email("Please enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(1, "Password is required"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -75,6 +75,7 @@ export function RegisterContainer() {
         body: JSON.stringify({
           email: data.email,
           password: data.password,
+          name: data.name,
         }),
       });
 

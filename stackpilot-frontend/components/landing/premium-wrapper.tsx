@@ -49,7 +49,7 @@ export function PremiumWrapper({ children }: PremiumWrapperProps) {
         });
 
         // Section animations
-        gsap.utils.toArray("section").forEach((section) => {
+        gsap.utils.toArray("section").forEach((section: unknown) => {
           gsap.fromTo(
             section as Element,
             {

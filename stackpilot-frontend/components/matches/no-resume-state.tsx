@@ -21,7 +21,7 @@ export function NoResumeState({ onUploadClick }: NoResumeStateProps) {
       </p>
       <Button
         onClick={onUploadClick}
-        className="mt-6 bg-orange-500 hover:bg-orange-600"
+        className="mt-6 bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold"
       >
         Upload Resume
       </Button>

@@ -7,7 +7,8 @@ export const Card = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("bg-white rounded-lg border shadow-sm", className)}
+    className={cn("rounded-lg border shadow-sm transition-all duration-300", className)}
+    style={{ backgroundColor: "#1a1a1a", borderColor: "#2a2a2a", color: "#f5f0e8" }}
     {...props}
   />
 ));
@@ -25,7 +26,7 @@ export const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <h3 ref={ref} className={cn("text-lg font-semibold", className)} {...props} />
+  <h3 ref={ref} className={cn("text-lg font-semibold", className)} style={{ color: "#f5f0e8" }} {...props} />
 ));
 CardTitle.displayName = "CardTitle";
 
@@ -33,7 +34,7 @@ export const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-gray-600", className)} {...props} />
+  <p ref={ref} className={cn("text-sm", className)} style={{ color: "#a0a0a0" }} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 

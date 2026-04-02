@@ -47,7 +47,7 @@ export function JobCard({
     setSaving(true);
     try {
       if (isSaved) {
-        await apiClient.delete(`/jobs/saved/${job.id}`);
+        await apiClient.delete(`/jobs/saved/job/${job.id}`);
         toast({
           title: "Job removed",
           description: "Job removed from saved list",
@@ -83,8 +83,8 @@ export function JobCard({
       <Card
         className={cn(
           "group card-hover overflow-hidden relative",
-          "border-2 border-gray-200 hover:border-orange-500/50",
-          "bg-white hover:bg-linear-to-br hover:from-white hover:to-orange-50/30",
+          "border-2 border-gray-200 hover:border-[#f5c842]/50",
+          "bg-white hover:bg-linear-to-br hover:from-white hover:to-[#f5c842]/10",
           className,
         )}
       >
@@ -92,7 +92,7 @@ export function JobCard({
           {/* Header */}
           <div className="flex items-start justify-between mb-5">
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-navy group-hover:text-orange-500 transition-all duration-300 mb-2">
+              <h3 className="text-xl font-bold text-navy group-hover:text-[#f5c842] transition-all duration-300 mb-2">
                 {job.title}
               </h3>
               <p className="text-gray-600 font-medium">{job.company}</p>
@@ -104,7 +104,7 @@ export function JobCard({
               size="icon"
               onClick={handleSave}
               disabled={saving}
-              className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all duration-300 hover:scale-110"
+              className="text-gray-400 hover:text-[#f5c842] hover:bg-[#f5c842]/10 transition-all duration-300 hover:scale-110"
             >
               <LordiconWrapper
                 icon={isSaved ? animations.heartFilled : animations.heart}
@@ -246,12 +246,12 @@ export function JobCard({
           )}
         </CardContent>
 
-        <CardFooter className="px-6 py-4 bg-linear-to-r from-gray-50 to-orange-50/30 border-t border-gray-200 group-hover:from-orange-50/50 group-hover:to-orange-100/50 transition-all duration-300">
+        <CardFooter className="px-6 py-4 bg-linear-to-r from-gray-50 to-[#f5c842]/10 border-t border-gray-200 group-hover:from-[#f5c842]/10 group-hover:to-[#f5c842]/20 transition-all duration-300">
           <div className="flex items-center justify-between w-full">
             <span className="text-xs text-gray-500 font-medium">
               {job.source && `via ${job.source}`}
             </span>
-            <span className="text-sm text-orange-500 font-bold group-hover:text-orange-600 flex items-center gap-1 transition-all duration-300 group-hover:gap-2">
+            <span className="text-sm text-[#f5c842] font-bold group-hover:text-[#d4a832] flex items-center gap-1 transition-all duration-300 group-hover:gap-2">
               View Details
               <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
                 →

@@ -111,4 +111,10 @@ export class SavedJobsController {
   async deleteSavedJob(@UserId() userId: string, @Param('id') id: string) {
     await this.savedJobsService.deleteSavedJob(userId, id);
   }
+
+  @Delete('job/:jobId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteByJobId(@UserId() userId: string, @Param('jobId') jobId: string) {
+    await this.savedJobsService.deleteByJobId(userId, jobId);
+  }
 }

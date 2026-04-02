@@ -45,6 +45,12 @@ export class Job {
   jobType?: string; // full-time, part-time, contract, etc.
 
   @Column({ nullable: true })
+  experienceRequiredMin?: number;
+
+  @Column({ nullable: true })
+  experienceRequiredMax?: number;
+
+  @Column({ nullable: true })
   @Index()
   source?: string; // adzuna, indeed, etc.
 

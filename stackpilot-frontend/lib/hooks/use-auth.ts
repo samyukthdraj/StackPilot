@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useSyncExternalStore, useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@/lib/types/api";
 
@@ -99,6 +99,13 @@ function getServerSnapshot() {
 
 export function useAuth() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // Defers state update slightly to avoid synchronous cascade warnings
+    const timer = setTimeout(() => setIsMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const authState = useSyncExternalStore(
     subscribeToAuth,
@@ -128,7 +135,7 @@ export function useAuth() {
   return {
     user: authState.user,
     isAuthenticated: authState.isAuthenticated,
-    isLoading: false,
+    isLoading: !isMounted,
     requireAuth,
     logout,
   };

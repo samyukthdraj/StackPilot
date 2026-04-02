@@ -61,6 +61,7 @@ export interface Resume {
     projects: ProjectItem[];
     education: EducationItem[];
   };
+  fileData?: string; // base64 encoded PDF contents
   scoreBreakdown?: {
     skillMatch: number;
     projectStrength: number;
@@ -68,6 +69,10 @@ export interface Resume {
     resumeStructure: number;
     keywordDensity: number;
     actionVerbs: number;
+    total: number;
+    feedback?: string;
+    strengths?: string[];
+    suggestions?: string[];
   };
 }
 
@@ -108,6 +113,8 @@ export interface Job {
   postedAt: string;
   url?: string;
   source?: string;
+  experienceRequiredMin?: number;
+  experienceRequiredMax?: number;
   createdAt?: string;
   updatedAt?: string;
 }

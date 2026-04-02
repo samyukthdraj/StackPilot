@@ -81,6 +81,9 @@ export class Resume {
   @Column({ name: 'raw_text', type: 'text' })
   rawText: string;
 
+  @Column({ name: 'file_data', type: 'text', nullable: true })
+  fileData?: string; // base64-encoded PDF for in-browser viewing
+
   @Column({
     name: 'structured_data',
     type: 'jsonb',
@@ -104,7 +107,13 @@ export class Resume {
     keywordDensity: number;
     actionVerbs: number;
     total: number;
+    feedback?: string;
+    strengths?: string[];
+    suggestions?: string[];
   };
+
+  @Column({ name: 'target_job_description', type: 'text', nullable: true })
+  targetJobDescription?: string;
 
   @Column({ name: 'is_primary', default: false })
   @Index()

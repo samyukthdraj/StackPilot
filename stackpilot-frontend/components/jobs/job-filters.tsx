@@ -12,9 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
 import { useJobFiltersStore } from "@/lib/store/job-filters-store";
@@ -28,14 +27,11 @@ const countries = [
   { value: "de", label: "Germany" },
   { value: "fr", label: "France" },
   { value: "in", label: "India" },
+  { value: "ae", label: "UAE" },
 ];
 
-const jobTypes = [
-  { value: "full_time", label: "Full Time" },
-  { value: "part_time", label: "Part Time" },
-  { value: "contract", label: "Contract" },
-  { value: "permanent", label: "Permanent" },
-];
+// Static definitions moved to dynamic props inside component
+
 
 const timeRanges = [
   { value: 12, label: "Last 12 hours" },
@@ -46,38 +42,67 @@ const timeRanges = [
 
 interface JobFiltersProps {
   className?: string;
+  locations?: string[];
+  companies?: string[];
+  jobTypes?: string[];
+  onQuickFilter?: (type: "location" | "company", value: string, action: "add" | "remove" | "clear") => void;
+  isLoading?: boolean;
 }
 
-export function JobFilters({ className }: JobFiltersProps) {
+export function JobFilters({ 
+  className, 
+  locations = [], 
+  companies = [],
+  jobTypes = [],
+  onQuickFilter,
+  isLoading = false 
+}: JobFiltersProps) {
   const { filters, setFilter, resetFilters, hasActiveFilters } =
     useJobFiltersStore();
   const [isExpanded, setIsExpanded] = useState(true);
 
+  const getJobTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'fulltime': 'Full Time',
+      'full_time': 'Full Time',
+      'parttime': 'Part Time',
+      'part_time': 'Part Time',
+      'contract': 'Contract',
+      'contractor': 'Contractor',
+      'permanent': 'Permanent',
+      'intern': 'Internship',
+      'internship': 'Internship'
+    };
+    return labels[type.toLowerCase()] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
   return (
-    <Card className={cn("sticky top-24", className)}>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Filters</CardTitle>
+    <Card className={cn("sticky top-24 border-[#2a2a2a] bg-[#1a1a1a]", className)}>
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <CardTitle className="text-lg font-bold tracking-tight text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', serif" }}>
+          Intelligence Hub
+        </CardTitle>
         <div className="flex items-center gap-2">
           {hasActiveFilters() && (
             <Button
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="text-orange-500 hover:text-orange-600"
+              className="text-[#f5c842] hover:text-[#d4a832] text-[10px] font-bold uppercase tracking-widest px-0 h-auto"
             >
-              Reset All
+              Reset
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="lg:hidden"
+            className="lg:hidden text-[#a0a0a0]"
           >
             <LordiconWrapper
               icon={isExpanded ? animations.chevronUp : animations.chevronDown}
               size={20}
-              color="#0A1929"
+              color="#a0a0a0"
               state="hover"
             />
           </Button>
@@ -85,44 +110,44 @@ export function JobFilters({ className }: JobFiltersProps) {
       </CardHeader>
 
       <CardContent
-        className={cn("space-y-6", !isExpanded && "hidden lg:block")}
+        className={cn("space-y-6 custom-scrollbar max-h-[75vh] overflow-y-auto pb-8", !isExpanded && "hidden lg:block")}
       >
         {/* Search */}
-        <div className="space-y-2">
-          <Label>Search</Label>
+        <div className="space-y-2 text-[#a0a0a0]">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Market Search</Label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
               <LordiconWrapper
                 icon={animations.search}
                 size={18}
-                color="#94A3B8"
+                color="#666"
                 state="morph"
               />
             </div>
             <Input
-              placeholder="Job title, keywords..."
+              placeholder="React, AI, Cloud..."
               value={filters.search}
               onChange={(e) => setFilter("search", e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] focus:border-[#f5c842] rounded-xl h-11"
             />
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-[#2a2a2a]" />
 
-        {/* Country */}
-        <div className="space-y-2">
-          <Label>Country</Label>
+        {/* Global Market */}
+        <div className="space-y-3">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Global Market</Label>
           <Select
             value={filters.country}
             onValueChange={(value) => setFilter("country", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] rounded-xl h-11">
               <SelectValue placeholder="Select country" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8]">
               {countries.map((country) => (
-                <SelectItem key={country.value} value={country.value}>
+                <SelectItem key={country.value} value={country.value} className="focus:bg-[#f5c842] focus:text-[#0d0d0d]">
                   {country.label}
                 </SelectItem>
               ))}
@@ -130,19 +155,63 @@ export function JobFilters({ className }: JobFiltersProps) {
           </Select>
         </div>
 
-        {/* Time Range */}
-        <div className="space-y-2">
-          <Label>Posted Within</Label>
+        {/* Dynamic Regional Tags */}
+        <div className="space-y-3">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#f5c842]">Regional Insight</Label>
+          {isLoading ? (
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-7 w-16 bg-[#2a2a2a] rounded-lg" />
+              ))}
+            </div>
+          ) : locations.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              <button 
+                onClick={() => {
+                  setFilter("filterLocation", []);
+                  if (onQuickFilter) onQuickFilter("location", "all", "clear");
+                }}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${filters.filterLocation.length === 0 ? 'bg-[#f5c842] text-[#0d0d0d] border-[#f5c842]' : 'bg-[#0d0d0d] border-[#2a2a2a] text-[#888] hover:border-[#f5c842]/50'}`}
+              >
+                Global
+              </button>
+              {locations.slice(0, 10).map(loc => (
+                <button 
+                  key={loc}
+                  onClick={() => {
+                    const isSelected = filters.filterLocation.includes(loc);
+                    const newValue = isSelected 
+                      ? filters.filterLocation.filter(l => l !== loc)
+                      : [...filters.filterLocation, loc];
+                    setFilter("filterLocation", newValue);
+                    if (onQuickFilter) onQuickFilter("location", loc, isSelected ? "remove" : "add");
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${filters.filterLocation.includes(loc) ? 'bg-[#f5c842] text-[#0d0d0d] border-[#f5c842]' : 'bg-[#0d0d0d] border-[#2a2a2a] text-[#888] hover:border-[#f5c842]/50'}`}
+                >
+                  {loc.split(',')[0].trim()}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-[10px] text-gray-600 font-mono italic">No regional metadata detected</div>
+          )}
+        </div>
+
+        <Separator className="bg-[#2a2a2a]" />
+
+        {/* Recency */}
+        <div className="space-y-3">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Time to Hire</Label>
           <Select
             value={filters.days.toString()}
             onValueChange={(value) => setFilter("days", parseInt(value))}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select time range" />
+            <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] rounded-xl h-11">
+              <SelectValue placeholder="Threshold" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8]">
               {timeRanges.map((range) => (
-                <SelectItem key={range.value} value={range.value.toString()}>
+                <SelectItem key={range.value} value={range.value.toString()} className="focus:bg-[#f5c842] focus:text-[#0d0d0d]">
                   {range.label}
                 </SelectItem>
               ))}
@@ -150,63 +219,91 @@ export function JobFilters({ className }: JobFiltersProps) {
           </Select>
         </div>
 
-        {/* Job Type */}
-        <div className="space-y-2">
-          <Label>Job Type</Label>
-          <div className="space-y-2">
-            {jobTypes.map((type) => (
-              <div key={type.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={type.value}
-                  checked={filters.jobType.includes(type.value)}
-                  onCheckedChange={(checked) => {
-                    const newTypes = checked
-                      ? [...filters.jobType, type.value]
-                      : filters.jobType.filter((t) => t !== type.value);
+        {/* Dynamic Job Type Grid */}
+        <div className="space-y-3">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Engagement Mode</Label>
+          {jobTypes.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2 text-center">
+              {jobTypes.map((typeValue) => (
+                <button
+                  key={typeValue}
+                  onClick={() => {
+                    const newTypes = filters.jobType.includes(typeValue)
+                      ? filters.jobType.filter((t) => t !== typeValue)
+                      : [...filters.jobType, typeValue];
                     setFilter("jobType", newTypes);
                   }}
-                />
-                <label
-                  htmlFor={type.value}
-                  className="text-sm text-gray-600 cursor-pointer"
+                  className={cn(
+                    "p-2 rounded-xl text-[9px] font-bold uppercase transition-all border",
+                    filters.jobType.includes(typeValue) 
+                      ? 'bg-[#f5c842]/10 border-[#f5c842] text-[#f5c842]' 
+                      : 'bg-[#0d0d0d] border-[#2a2a2a] text-[#666] hover:border-[#f5c842]/30'
+                  )}
                 >
-                  {type.label}
-                </label>
-              </div>
-            ))}
-          </div>
+                  {getJobTypeLabel(typeValue)}
+                </button>
+              ))}
+            </div>
+          ) : (
+             <div className="text-[10px] text-gray-600 font-mono italic">Detecting hire types...</div>
+          )}
         </div>
 
-        {/* Remote */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="remote"
-            checked={filters.remote}
-            onCheckedChange={(checked) => setFilter("remote", !!checked)}
-          />
-          <Label htmlFor="remote">Remote Only</Label>
+        <Separator className="bg-[#2a2a2a]" />
+
+        {/* Experience Level */}
+        <div className="space-y-3">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Professional Tenure</Label>
+          <Select
+            value={(filters.experienceMin ?? -1).toString()}
+            onValueChange={(value) => setFilter("experienceMin", parseInt(value))}
+          >
+            <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] rounded-xl h-11">
+              <SelectValue placeholder="Professional Tenure" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8] rounded-xl">
+              {[-1, 0, 1, 2, 3, 4, 5, 8, 10, 12, 15].map((years) => (
+                <SelectItem key={years} value={years.toString()} className="focus:bg-[#f5c842] focus:text-[#0d0d0d] rounded-lg">
+                  {years === -1 ? "Any Experience" : years === 0 ? "Entry Level" : `${years} ${years === 1 ? 'Year' : 'Years'}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <Separator />
+        <Separator className="bg-[#2a2a2a]" />
 
-        {/* Salary Range */}
-        <div className="space-y-4">
-          <Label>Salary Range (USD)</Label>
-          <Slider
-            min={0}
-            max={200000}
-            step={10000}
-            value={[filters.salaryMin, filters.salaryMax]}
-            onValueChange={([min, max]) => {
-              setFilter("salaryMin", min);
-              setFilter("salaryMax", max);
-            }}
-            className="mt-6"
-          />
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>${filters.salaryMin.toLocaleString()}</span>
-            <span>${filters.salaryMax.toLocaleString()}+</span>
-          </div>
+        {/* Industry Leaders */}
+        <div className="space-y-3 border-t border-[#2a2a2a] pt-6">
+          <Label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#f5c842]">Top Employers</Label>
+          {isLoading ? (
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-7 w-16 bg-[#2a2a2a] rounded-lg" />
+              ))}
+            </div>
+          ) : companies.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {companies.slice(0, 8).map(comp => (
+                <button 
+                  key={comp}
+                  onClick={() => {
+                    const isSelected = filters.filterCompany.includes(comp);
+                    const newValue = isSelected 
+                      ? filters.filterCompany.filter(c => c !== comp)
+                      : [...filters.filterCompany, comp];
+                    setFilter("filterCompany", newValue);
+                    if (onQuickFilter) onQuickFilter("company", comp, isSelected ? "remove" : "add");
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${filters.filterCompany.includes(comp) ? 'bg-[#f5c842] text-[#0d0d0d] border-[#f5c842]' : 'bg-[#0d0d0d] border-[#2a2a2a] text-[#888] hover:border-[#f5c842]/50'}`}
+                >
+                  {comp}
+                </button>
+              ))}
+            </div>
+          ) : (
+             <div className="text-[10px] text-gray-600 font-mono italic">No hiring data available</div>
+          )}
         </div>
       </CardContent>
     </Card>

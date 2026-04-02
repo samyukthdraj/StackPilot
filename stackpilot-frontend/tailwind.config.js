@@ -12,9 +12,10 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"aeonikPro"', '"aeonikPro Fallback"', "serif"],
-        "aeonik-pro": ['"aeonikPro"', '"aeonikPro Fallback"', "serif"],
-        mono: ['"socialMono"', '"socialMono Fallback"', "sans-serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+        "playfair": ["var(--font-display)", "serif"],
+        "aeonik-pro": ['"aeonikPro"', '"aeonikPro Fallback"', "sans-serif"],
+        mono: ["var(--font-jetbrains-mono)", "monospace"],
       },
       fontSize: {
         12: "0.75rem", // 12px
@@ -29,9 +30,18 @@ const config = {
           dark: "#051220",
         },
         orange: {
-          DEFAULT: "#FF6B35",
-          light: "#FF8B5C",
-          dark: "#E54C1E",
+          DEFAULT: "#f5c842",
+          50: "#fff9eb",
+          100: "#fef0c7",
+          200: "#fde08b",
+          300: "#fbc756",
+          400: "#f8af24",
+          500: "#f5c842", // Golden Yellow
+          600: "#d99706",
+          700: "#b47004",
+          800: "#92540e",
+          900: "#78450f",
+          950: "#452203",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

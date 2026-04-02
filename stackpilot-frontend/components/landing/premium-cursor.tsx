@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export function PremiumCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     const cursor = cursorRef.current;
@@ -21,20 +24,43 @@ export function PremiumCursor() {
       ring.style.left = `${x}px`;
       ring.style.top = `${y}px`;
 
-      // Detect background color for contrast
+      // Smart background detection only for logged out state (Landing Page)
+      // For logged in users, we keep it consistently white except on hover.
+      if (isAuthenticated) {
+        cursor.classList.remove("dark-mode");
+        ring.classList.remove("dark-mode");
+        return;
+      }
+
       const element = document.elementFromPoint(x, y);
       if (element) {
         let isLightBg = false;
+        let isModalContent = false;
 
-        if (element.closest('.premium-section-light') || element.closest('.bg-white') || element.closest('.bg-gray-50')) {
+        // Modals or specific containers...
+        if (
+          element.closest(".modal-overlay") ||
+          element.closest(".modal-card")
+        ) {
+          isModalContent = true;
+          isLightBg = false;
+        } else if (
+          element.closest(".premium-section-light") ||
+          element.closest(".bg-white") ||
+          element.closest(".bg-gray-50")
+        ) {
           isLightBg = true;
-        } else if (element.closest('.premium-section-dark') || element.closest('.premium-hero') || element.closest('.premium-metrics-section')) {
+        } else if (
+          element.closest(".premium-section-dark") ||
+          element.closest(".premium-hero") ||
+          element.closest(".premium-metrics-section")
+        ) {
           isLightBg = false;
         } else {
-          // Fallback to computed color
+          // Fallback check: look at computed color
           let currentEl: Element | null = element;
           let bgColor = "rgba(0, 0, 0, 0)";
-          
+
           while (currentEl) {
             bgColor = window.getComputedStyle(currentEl).backgroundColor;
             if (
@@ -47,12 +73,17 @@ export function PremiumCursor() {
             currentEl = currentEl.parentElement;
           }
 
-          if (bgColor && bgColor !== "rgba(0, 0, 0, 0)" && bgColor !== "transparent") {
+          if (
+            bgColor &&
+            bgColor !== "rgba(0, 0, 0, 0)" &&
+            bgColor !== "transparent"
+          ) {
             isLightBg = isLightBackground(bgColor);
           }
         }
 
-        if (isLightBg) {
+        // Apply dark mode only for light backgrounds
+        if (isLightBg && !isModalContent) {
           cursor.classList.add("dark-mode");
           ring.classList.add("dark-mode");
         } else {
@@ -116,7 +147,7 @@ export function PremiumCursor() {
       document.removeEventListener("mousedown", handleMouseDown);
       observer.disconnect();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <>

@@ -40,9 +40,9 @@
     --color-navy: #0a1929;
     --color-navy-light: #1e2f47;
     --color-navy-dark: #051220;
-    --color-orange: #ff6b35;
-    --color-orange-light: #ff8b5c;
-    --color-orange-dark: #e54c1e;
+    --color-orange: #f5c842;
+    --color-orange-light: #f5d062;
+    --color-orange-dark: #d4a832;
     --color-success: #10b981;
     --color-warning: #f59e0b;
     --color-error: #ef4444;
@@ -81,9 +81,9 @@
   }
 
   body {
-    background-color: white;
-    color: var(--color-gray-900);
-    font-family: "aeonikPro", "aeonikPro Fallback", serif;
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    font-family: var(--font-inter), sans-serif;
   }
 }
 
@@ -99,5 +99,35 @@
 
   ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Lordicon Global Fixes */
+  lord-icon {
+    display: inline-block !important;
+    vertical-align: middle;
+  }
+
+  lord-icon.current-color {
+    --lord-icon-primary: currentColor !important;
+    --lord-icon-secondary: currentColor !important;
+  }
+
+  /* Global Dropdown Selection Override */
+  [data-radix-collection-item][data-highlighted],
+  [role="option"][data-highlighted],
+  .select-item:focus,
+  .select-item[data-highlighted] {
+    background-color: #f5c842 !important;
+    color: #0d0d0d !important;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
   }
 }

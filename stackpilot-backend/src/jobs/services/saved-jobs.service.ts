@@ -160,6 +160,16 @@ export class SavedJobsService {
     await this.savedJobRepository.remove(savedJob);
   }
 
+  async deleteByJobId(userId: string, jobId: string): Promise<void> {
+    const savedJob = await this.savedJobRepository.findOne({
+      where: { userId, jobId },
+    });
+    if (!savedJob) {
+      throw new NotFoundException('Saved job not found');
+    }
+    await this.savedJobRepository.remove(savedJob);
+  }
+
   async checkIfSaved(userId: string, jobId: string): Promise<boolean> {
     const count = await this.savedJobRepository.count({
       where: { userId, jobId },

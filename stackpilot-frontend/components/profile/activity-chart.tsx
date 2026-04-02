@@ -18,26 +18,33 @@ import {
   Legend,
 } from "recharts";
 import { useProfileStats } from "@/lib/hooks/use-profile";
-import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
-import { animations } from "@/public/icons/lordicon";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ActivityChart() {
   const { data: stats, isLoading } = useProfileStats();
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-[#2a2a2a] bg-[#1a1a1a]">
         <CardHeader>
-          <CardTitle>Activity Overview</CardTitle>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-60 mt-2" />
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12">
-            <LordiconWrapper
-              icon={animations.loading}
-              size={32}
-              color="#FF6B35"
-              state="loop"
-            />
+        <CardContent className="space-y-4">
+          <div className="flex items-end gap-2 h-[200px] pt-4">
+            {[40, 70, 45, 90, 65, 30, 80, 55, 95, 75, 40, 60].map((height, i) => (
+              <Skeleton 
+                key={i} 
+                className="flex-1" 
+                style={{ height: `${height}%` }} 
+              />
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-3 w-12" />
           </div>
         </CardContent>
       </Card>
@@ -47,10 +54,10 @@ export function ActivityChart() {
   if (!stats) return null;
 
   return (
-    <Card>
+    <Card className="border-[#2a2a2a] bg-[#1a1a1a]">
       <CardHeader>
-        <CardTitle>Activity Overview</CardTitle>
-        <CardDescription>Your activity over the last 30 days</CardDescription>
+        <CardTitle className="text-[#f5f0e8] font-playfair">Activity Overview</CardTitle>
+        <CardDescription className="text-gray-400">Your activity over the last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
@@ -74,9 +81,10 @@ export function ActivityChart() {
               <YAxis className="text-xs" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e2e8f0",
+                  backgroundColor: "#0d0d0d",
+                  border: "1px solid #2a2a2a",
                   borderRadius: "8px",
+                  color: "#f5f0e8"
                 }}
               />
               <Legend />
@@ -85,8 +93,8 @@ export function ActivityChart() {
                 dataKey="matches"
                 name="Job Matches"
                 stackId="1"
-                stroke="#FF6B35"
-                fill="#FF6B35"
+                stroke="#f5c842"
+                fill="#f5c842"
                 fillOpacity={0.3}
               />
               <Area
@@ -94,8 +102,8 @@ export function ActivityChart() {
                 dataKey="scans"
                 name="Resume Scans"
                 stackId="1"
-                stroke="#0A1929"
-                fill="#0A1929"
+                stroke="#f5f0e8"
+                fill="#f5f0e8"
                 fillOpacity={0.3}
               />
               <Area

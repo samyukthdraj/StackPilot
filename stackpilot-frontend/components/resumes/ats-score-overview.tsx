@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { CheckCircle2, Info, Lightbulb } from "lucide-react";
 import {
   RadarChart,
   PolarGrid,
@@ -23,6 +24,9 @@ interface ScoreBreakdown {
   resumeStructure: number;
   keywordDensity: number;
   actionVerbs: number;
+  feedback?: string;
+  strengths?: string[];
+  suggestions?: string[];
 }
 
 interface ATSScoreOverviewProps {
@@ -58,18 +62,18 @@ export function ATSScoreOverview({
       </CardHeader>
       <CardContent>
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="h-75">
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={scoreData}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="category" />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                <PolarGrid stroke="#2a2a2a" />
+                <PolarAngleAxis dataKey="category" tick={{ fill: "#a0a0a0", fontSize: 12 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#a0a0a0", fontSize: 10 }} />
                 <Radar
                   name="Score"
                   dataKey="score"
-                  stroke="#FF6B35"
-                  fill="#FF6B35"
-                  fillOpacity={0.3}
+                  stroke="#f5c842"
+                  fill="#f5c842"
+                  fillOpacity={0.25}
                 />
                 <Legend />
               </RadarChart>
@@ -92,13 +96,61 @@ export function ATSScoreOverview({
                 <span className="font-semibold text-navy">
                   Overall ATS Score
                 </span>
-                <span className="text-3xl font-bold text-orange-500">
+                <span className="text-3xl font-bold text-[#f5c842]">
                   {atsScore}%
                 </span>
               </div>
             </div>
           </div>
         </div>
+
+        {scoreBreakdown?.feedback && (
+          <div className="mt-8 pt-8 border-t border-[#2a2a2a] space-y-6">
+            <div className="bg-[#f5c842]/10 border border-[#f5c842]/20 p-4 rounded-lg">
+              <h3 className="font-semibold text-[#f5c842] flex items-center gap-2 mb-2">
+                <Info className="w-5 h-5" />
+                AI ATS Feedback
+              </h3>
+              <p className="text-[#a0a0a0] leading-relaxed text-sm">{scoreBreakdown.feedback}</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {scoreBreakdown.strengths && scoreBreakdown.strengths.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium text-[#f5f0e8] flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    Strengths
+                  </h4>
+                  <ul className="space-y-2">
+                    {scoreBreakdown.strengths.map((s, i) => (
+                      <li key={i} className="text-sm text-[#a0a0a0] flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {scoreBreakdown.suggestions && scoreBreakdown.suggestions.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium text-[#f5f0e8] flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-[#f5c842]" />
+                    Areas to Improve
+                  </h4>
+                  <ul className="space-y-2">
+                    {scoreBreakdown.suggestions.map((s, i) => (
+                      <li key={i} className="text-sm text-[#a0a0a0] flex items-start gap-2">
+                        <span className="text-[#f5c842] mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

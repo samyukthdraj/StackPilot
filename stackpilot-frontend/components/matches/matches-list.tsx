@@ -1,22 +1,18 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MatchCard } from "@/components/matches/match-card";
 import { MatchStats } from "@/components/matches/match-stats";
-import { LearningRecommendations } from "@/components/matches/learning-recommendations";
-import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { animations } from "@/public/icons/lordicon";
-import { Job } from "@/lib/types/api";
-
-interface Match {
-  jobId: string;
-  score: number;
-}
+import { Job, JobMatch } from "@/lib/types/api";
 
 interface MatchesListProps {
-  matches: Match[];
+  matches: JobMatch[];
   jobDetails: Record<string, Job>;
   savedJobs: Set<string>;
   isLoading: boolean;
   onSave: () => void;
+  resumeId?: string;
 }
 
 export function MatchesList({
@@ -25,14 +21,24 @@ export function MatchesList({
   savedJobs,
   isLoading,
   onSave,
+  resumeId,
 }: MatchesListProps) {
   return (
     <div className="lg:col-span-3 space-y-6">
       <Tabs defaultValue="list" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="list">List View</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="learning">Learning</TabsTrigger>
+        <TabsList className="bg-[#1a1a1a] border border-[#2a2a2a] p-1 h-11 rounded-xl">
+          <TabsTrigger 
+            value="list"
+            className="data-[state=active]:!bg-[#f5c842] data-[state=active]:!text-[#0d0d0d] data-[state=active]:font-bold transition-all duration-300 px-6 text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold"
+          >
+            List View
+          </TabsTrigger>
+          <TabsTrigger 
+            value="stats"
+            className="data-[state=active]:!bg-[#f5c842] data-[state=active]:!text-[#0d0d0d] data-[state=active]:font-bold transition-all duration-300 px-6 text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold"
+          >
+            Statistics
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
@@ -40,34 +46,24 @@ export function MatchesList({
             <p className="text-sm text-gray-600">
               Found{" "}
               <span className="font-semibold text-navy">
-                {matches?.length || 0}
+                {isLoading ? "..." : (matches?.length || 0)}
               </span>{" "}
               matches
             </p>
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <LordiconWrapper
-                icon={animations.loading}
-                size={48}
-                color="#FF6B35"
-                state="loop"
-              />
+            <div className="grid gap-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-48 w-full rounded-xl" />
+              ))}
             </div>
           ) : matches?.length === 0 ? (
-            <div className="text-center py-12">
-              <LordiconWrapper
-                icon={animations.empty}
-                size={64}
-                color="#94A3B8"
-                state="loop"
-              />
-              <h3 className="text-lg font-semibold text-navy mt-4">
-                No matches found
-              </h3>
-              <p className="text-gray-600">Try adjusting your filters</p>
-            </div>
+            <EmptyState
+              title="No matches found"
+              description="We couldn't find any jobs matching your criteria. Try adjusting your filters or uploading a more detailed resume."
+              icon={animations.search}
+            />
           ) : (
             <div className="grid gap-4">
               {matches?.map((match) => (
@@ -84,11 +80,7 @@ export function MatchesList({
         </TabsContent>
 
         <TabsContent value="stats">
-          <MatchStats />
-        </TabsContent>
-
-        <TabsContent value="learning">
-          <LearningRecommendations />
+          <MatchStats resumeId={resumeId} />
         </TabsContent>
       </Tabs>
     </div>

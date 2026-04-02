@@ -133,7 +133,13 @@ export function LearningRecommendations() {
   const { data: stats } = useMatchStats();
 
   if (!stats || stats.commonMissingSkills.length === 0) {
-    return null;
+    return (
+      <Card className="border-2 border-[#2a2a2a] bg-[#1a1a1a]">
+        <CardContent className="p-8 text-center text-[#a0a0a0]">
+          <p>You have a strong match profile! No critical learning recommendations at this time.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const skillsToLearn = stats.commonMissingSkills
@@ -145,7 +151,15 @@ export function LearningRecommendations() {
     )
     .slice(0, 3);
 
-  if (skillsToLearn.length === 0) return null;
+  if (skillsToLearn.length === 0) {
+    return (
+      <Card className="border-2 border-[#2a2a2a] bg-[#1a1a1a]">
+        <CardContent className="p-8 text-center text-[#a0a0a0]">
+          <p>No specific learning resources for your missing skills. Keep exploring general topics!</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-2 border-gray-200 hover:border-orange-500/50 transition-all duration-300 overflow-hidden">
