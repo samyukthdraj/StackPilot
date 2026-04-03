@@ -31,20 +31,30 @@ export class NotificationSchedulerService {
     try {
       // 1. Get all users who enabled daily digest
       const users = await this.userRepository.find();
-      
+
       // Calculate 24h window
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
       // 2. Count total new jobs in the market for everyone's summary
       const newJobsCount = await this.jobRepository.count({
-        where: { createdAt: MoreThanOrEqual(oneDayAgo) }
+        where: { createdAt: MoreThanOrEqual(oneDayAgo) },
       });
 
       for (const user of users) {
-        if (!user.notificationPreferences?.email?.dailyDigest) continue;
+        // Handle potentially missing notification preferences
+        const preferences = user.notificationPreferences;
+        const dailyDigestEnabled = preferences?.email?.dailyDigest ?? true; // Default to true if preferences missing
+
+        if (!dailyDigestEnabled) {
+          this.logger.debug(
+            `Skipping daily digest for ${user.email} (disabled in preferences)`,
+          );
+          continue;
+        }
 
         // 3. Get user-specific stats
+        this.logger.debug(`Fetching stats for user: ${user.id}`);
         const [topMatches, savedJobsCount] = await Promise.all([
           this.jobMatchRepository.find({
             where: { userId: user.id },
@@ -57,22 +67,39 @@ export class NotificationSchedulerService {
           }),
         ]);
 
+        this.logger.debug(
+          `Stats for ${user.email}: ${topMatches.length} matches, ${savedJobsCount} saved jobs`,
+        );
+
         // 4. Send the high-fidelity digest
         if (topMatches.length > 0 || newJobsCount > 0) {
-          await this.emailService.sendDailyDigestEmail(
-            user.email,
-            user.name || 'User',
-            {
-              newJobs: newJobsCount,
-              savedJobs: savedJobsCount,
-              topMatches: topMatches.map((m) => ({
-                title: m.job.title,
-                company: m.job.company,
-                score: m.score,
-              })),
-            },
+          try {
+            await this.emailService.sendDailyDigestEmail(
+              user.email,
+              user.name || 'User',
+              {
+                newJobs: newJobsCount,
+                savedJobs: savedJobsCount,
+                topMatches: topMatches.map((m) => ({
+                  title: m.job.title,
+                  company: m.job.company,
+                  score: m.score,
+                })),
+              },
+            );
+            this.logger.log(
+              `Daily digest successfully dispatched to ${user.email}`,
+            );
+          } catch (emailError) {
+            this.logger.error(
+              `Failed to send daily digest to ${user.email}:`,
+              emailError,
+            );
+          }
+        } else {
+          this.logger.debug(
+            `No new matches or jobs for ${user.email}, skipping email`,
           );
-          this.logger.debug(`Daily digest dispatched to ${user.email}`);
         }
       }
 

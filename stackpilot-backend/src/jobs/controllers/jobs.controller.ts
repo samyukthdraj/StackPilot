@@ -14,6 +14,7 @@ import { JobMatchingService } from '../services/job-matching.service';
 import { ResumeService } from '../../resumes/services/resume.service';
 import { UserFromJwt } from '../../auth/user-id.decorator';
 import { Resume } from '../../resumes/entities/resume.entity';
+import { NotificationSchedulerService } from '../services/notification-scheduler.service';
 
 @Controller('jobs')
 @UseGuards(JwtAuthGuard)
@@ -24,6 +25,7 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly matchingService: JobMatchingService,
     private readonly resumeService: ResumeService,
+    private readonly notificationSchedulerService: NotificationSchedulerService,
   ) {}
 
   @Get()
@@ -171,5 +173,13 @@ export class JobsController {
   @Get(':id')
   async getJob(@User() user: UserFromJwt, @Param('id') id: string) {
     return this.jobsService.findJobById(id);
+  }
+
+  @Get('debug/trigger-daily-digest')
+  async triggerDailyDigest(@User() user: UserFromJwt) {
+    // Only allow for admin or for testing
+    this.logger.log(`Manual daily digest trigger requested by ${user.email}`);
+    await this.notificationSchedulerService.sendDailyDigests();
+    return { message: 'Daily digest cycle triggered' };
   }
 }

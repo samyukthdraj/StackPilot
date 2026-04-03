@@ -11,13 +11,13 @@ import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
+import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa6";
 
 const loginSchema = z.object({
   email: z
@@ -55,6 +55,11 @@ export function LoginContainer() {
       router.replace("/dashboard");
     }
   }, [reset, router]);
+
+  const handleOAuth = (provider: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    window.location.href = `${apiUrl}/auth/${provider}`;
+  };
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
@@ -145,9 +150,63 @@ export function LoginContainer() {
             </Link>
           </div>
           <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-          <CardDescription className="text-center pb-2">
-            Enter your credentials to access your account
-          </CardDescription>
+          <div className="flex flex-col space-y-6 pt-4">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                  Google
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                  onClick={() => handleOAuth('google')}
+                  type="button"
+                >
+                  <FaGoogle className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                </Button>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                  GitHub
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                  onClick={() => handleOAuth('github')}
+                  type="button"
+                >
+                  <FaGithub className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                </Button>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                  Microsoft
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                  onClick={() => handleOAuth('microsoft')}
+                  type="button"
+                >
+                  <FaMicrosoft className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-[#2a2a2a]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#1a1a1a] px-3 text-gray-500 tracking-widest font-medium">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+          </div>
         </CardHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>

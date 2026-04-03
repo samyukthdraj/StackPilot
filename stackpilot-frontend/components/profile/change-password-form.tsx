@@ -17,6 +17,9 @@ import { Label } from "@/components/ui/label";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
 import { useChangePassword } from "@/lib/hooks/use-profile";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa6";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
 
 const passwordSchema = z
   .object({
@@ -41,6 +44,7 @@ const passwordSchema = z
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 export function ChangePasswordForm() {
+  const { user } = useAuth();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -65,6 +69,85 @@ export function ChangePasswordForm() {
     }
   };
 
+  const isOAuthUser =
+    user?.authProvider && user.authProvider !== "local";
+
+  if (isOAuthUser) {
+    const providerNames = {
+      google: "Google",
+      github: "GitHub",
+      microsoft: "Microsoft",
+    };
+
+    const ProviderIcon = {
+      google: FaGoogle,
+      github: FaGithub,
+      microsoft: FaMicrosoft,
+    }[user.authProvider as keyof typeof providerNames] || ShieldCheck;
+
+    const providerColor = {
+      google: "#4285F4",
+      github: "#ffffff",
+      microsoft: "#00A4EF",
+    }[user.authProvider as keyof typeof providerNames] || "#f5c842";
+
+    return (
+      <Card className="border-[#f5c842]/20 bg-linear-to-br from-[#1a1a1a] to-[#0d0d0d] overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+          <ProviderIcon size={160} />
+        </div>
+        <CardHeader className="relative z-10 pt-8">
+          <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <ShieldAlert className="text-accent h-6 w-6" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Security Settings</CardTitle>
+          <CardDescription className="text-[#a0a0a0] text-base max-w-md">
+            You are currently signed in via{" "}
+            <span className="text-[#f5c842] font-semibold">
+              {providerNames[user.authProvider as keyof typeof providerNames]}
+            </span>
+            . Password management is handled by your identity provider.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="relative z-10 space-y-6 pb-12">
+          <div className="p-6 rounded-2xl bg-white/2 border border-white/5 backdrop-blur-sm space-y-4">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
+                style={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+              >
+                <ProviderIcon size={24} style={{ color: providerColor }} />
+              </div>
+              <div>
+                <p className="font-bold text-[#f5f0e8]">
+                  Account strictly secured by {providerNames[user.authProvider as keyof typeof providerNames]}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Authentication is managed externally for your security.
+                </p>
+              </div>
+            </div>
+            
+            <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent my-6" />
+            
+            <p className="text-sm text-gray-400 leading-relaxed">
+              To change your password or update security settings, please visit your{" "}
+              {providerNames[user.authProvider as keyof typeof providerNames]} Account Settings. StackPilot does not store your password for this account.
+            </p>
+          </div>
+          
+          <Button 
+            variant="outline" 
+            className="border-accent/30 text-accent hover:bg-accent/10 transition-colors"
+            onClick={() => window.open(`https://www.${user.authProvider}.com`, '_blank')}
+          >
+            Manage {providerNames[user.authProvider as keyof typeof providerNames]} Account
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -75,7 +158,6 @@ export function ChangePasswordForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Current Password */}
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Current Password</Label>
             <div className="relative">
@@ -105,7 +187,6 @@ export function ChangePasswordForm() {
             )}
           </div>
 
-          {/* New Password */}
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
             <div className="relative">
@@ -134,7 +215,6 @@ export function ChangePasswordForm() {
               </p>
             )}
 
-            {/* Password Requirements */}
             <div className="mt-2 p-3 bg-gray-50 rounded-lg">
               <p className="text-xs font-medium text-gray-700 mb-2">
                 Password must contain:
@@ -164,7 +244,6 @@ export function ChangePasswordForm() {
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <div className="relative">

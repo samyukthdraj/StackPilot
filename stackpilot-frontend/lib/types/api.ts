@@ -4,6 +4,7 @@ export interface User {
   name?: string;
   role?: "user" | "admin";
   subscriptionType?: string;
+  authProvider?: "local" | "google" | "github" | "microsoft";
   createdAt?: string;
   updatedAt?: string;
 }

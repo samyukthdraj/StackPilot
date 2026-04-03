@@ -36,7 +36,8 @@ export class EmailService {
         template: 'welcome',
         context: {
           name,
-          loginUrl: 'https://stackpilot.com/login',
+          loginUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`,
+          baseUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
         },
       };
 

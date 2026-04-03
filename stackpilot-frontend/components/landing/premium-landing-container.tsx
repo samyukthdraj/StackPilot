@@ -25,6 +25,7 @@ import { PremiumStats } from "./premium-stats";
 import { PremiumHowItWorks } from "./premium-how-it-works";
 import { PremiumCTA } from "./premium-cta";
 import { PremiumFooter } from "./premium-footer";
+import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa6";
 
 const loginSchema = z.object({
   email: z
@@ -126,6 +127,11 @@ export function PremiumLandingContainer() {
     }
   }, [router]);
 
+  const handleOAuth = (provider: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    window.location.href = `${apiUrl}/auth/${provider}`;
+  };
+
   const handleLogin = async (data: LoginForm) => {
     setIsLoading(true);
     setError(null);
@@ -205,12 +211,16 @@ export function PremiumLandingContainer() {
       <PremiumCursor />
       <PremiumNavbar
         onLoginClick={() => {
-          const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+          const token =
+            localStorage.getItem("token") ||
+            localStorage.getItem("access_token");
           if (token) router.push("/dashboard");
           else setShowLogin(true);
         }}
         onRegisterClick={() => {
-          const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+          const token =
+            localStorage.getItem("token") ||
+            localStorage.getItem("access_token");
           if (token) router.push("/dashboard");
           else setShowRegister(true);
         }}
@@ -266,9 +276,63 @@ export function PremiumLandingContainer() {
                 <CardTitle className="text-2xl text-center">
                   Welcome back
                 </CardTitle>
-                <CardDescription className="text-center pb-2">
-                  Enter your credentials to access your account
-                </CardDescription>
+                <div className="flex flex-col space-y-6 pt-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        Google
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("google")}
+                        type="button"
+                      >
+                        <FaGoogle className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        GitHub
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("github")}
+                        type="button"
+                      >
+                        <FaGithub className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        Microsoft
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("microsoft")}
+                        type="button"
+                      >
+                        <FaMicrosoft className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-[#2a2a2a]" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-[#1a1a1a] px-3 text-gray-500 tracking-widest font-medium">
+                        Or continue with email
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <form
                 onSubmit={loginForm.handleSubmit(handleLogin)}
@@ -394,9 +458,63 @@ export function PremiumLandingContainer() {
                 <CardTitle className="text-2xl text-center">
                   Create an account
                 </CardTitle>
-                <CardDescription className="text-center pb-2">
-                  Enter your details to get started with StackPilot
-                </CardDescription>
+                <div className="flex flex-col space-y-6 pt-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        Google
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("google")}
+                        type="button"
+                      >
+                        <FaGoogle className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        GitHub
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("github")}
+                        type="button"
+                      >
+                        <FaGithub className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        Microsoft
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                        onClick={() => handleOAuth("microsoft")}
+                        type="button"
+                      >
+                        <FaMicrosoft className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-[#2a2a2a]" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-[#1a1a1a] px-3 text-gray-500 tracking-widest font-medium">
+                        Or continue with email
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <form
                 onSubmit={registerForm.handleSubmit(handleRegister)}
@@ -513,11 +631,19 @@ export function PremiumLandingContainer() {
 
       <PremiumHero
         onGetStarted={() => {
-          if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
+          if (
+            localStorage.getItem("token") ||
+            localStorage.getItem("access_token")
+          )
+            router.push("/dashboard");
           else setShowRegister(true);
         }}
         onWatchDemo={() => {
-          if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
+          if (
+            localStorage.getItem("token") ||
+            localStorage.getItem("access_token")
+          )
+            router.push("/dashboard");
           else setShowLogin(true);
         }}
       />
@@ -525,10 +651,16 @@ export function PremiumLandingContainer() {
       <PremiumFeatures />
       <PremiumStats />
       <PremiumHowItWorks />
-      <PremiumCTA onGetStarted={() => {
-        if (localStorage.getItem("token") || localStorage.getItem("access_token")) router.push("/dashboard");
-        else setShowRegister(true);
-      }} />
+      <PremiumCTA
+        onGetStarted={() => {
+          if (
+            localStorage.getItem("token") ||
+            localStorage.getItem("access_token")
+          )
+            router.push("/dashboard");
+          else setShowRegister(true);
+        }}
+      />
       <PremiumFooter />
     </PremiumWrapper>
   );

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HttpModule } from '@nestjs/axios';
-import { ScheduleModule } from '@nestjs/schedule';
 import { Job } from './entities/job.entity';
 import { JobMatch } from './entities/job-match.entity';
 import { SavedJob } from './entities/saved-job.entity';
@@ -26,7 +25,6 @@ import { ResumeModule } from '../resumes/resume.module';
       timeout: 10000,
       maxRedirects: 5,
     }),
-    ScheduleModule.forRoot(),
     ResumeModule,
     EmailModule,
   ],

@@ -19,6 +19,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ name: 'auth_provider', default: 'local' })
+  authProvider: 'local' | 'google' | 'github' | 'microsoft';
+
   @Column({ nullable: true })
   name?: string;
 
