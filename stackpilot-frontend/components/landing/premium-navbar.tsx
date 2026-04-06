@@ -110,7 +110,17 @@ export function PremiumNavbar({
 
   return (
     <nav ref={navbarRef} className="premium-navbar">
-      <Link href="/" className="premium-logo flex items-center" style={{ cursor: "pointer", textDecoration: "none" }}>
+      <Link 
+        href="/" 
+        className="premium-logo flex items-center" 
+        style={{ cursor: "pointer", textDecoration: "none" }}
+        onClick={(e) => {
+          if (window.location.pathname === "/") {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }}
+      >
         StackPilot
       </Link>
       <div className="premium-nav-links">

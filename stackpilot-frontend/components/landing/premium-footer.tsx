@@ -28,11 +28,8 @@ export function PremiumFooter() {
 
         <div className="premium-footer-links">
           <div className="premium-label-small premium-mb-40">PRODUCT</div>
-          <Link href="/features">
-            Features Page
-          </Link>
           <Link href="/#features" onClick={handleFeaturesClick}>
-            Features Setup
+            Features
           </Link>
           <Link href="/pricing">Pricing</Link>
           <Link href="/faq">FAQ</Link>
