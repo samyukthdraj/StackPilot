@@ -15,6 +15,7 @@ import { UsageLog } from './usage/entities/usage-log.entity';
 import { UsersModule } from './users/users.module';
 import { SavedJob } from './jobs/entities/saved-job.entity';
 import { EmailModule } from './email/email.module';
+import { MarketplaceModule } from './marketplace/marketplace.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EmailModule } from './email/email.module';
     AdminModule,
     UsersModule,
     EmailModule,
+    MarketplaceModule,
   ],
 })
 export class AppModule {}
