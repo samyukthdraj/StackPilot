@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   description:
     "Optimize your resume, find perfect job matches, and accelerate your developer career.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/images/favicon.svg",
+    shortcut: "/images/favicon.svg",
+    apple: "/images/favicon.svg",
   },
   openGraph: {
     title: "StackPilot",
