@@ -9,7 +9,6 @@ import { JobSyncService } from './job-sync.service';
 import { EmailService } from '../../email/email.service';
 import { User } from '../../users/user.entity';
 
-
 export interface MatchScore {
   jobId: string;
   score: number;

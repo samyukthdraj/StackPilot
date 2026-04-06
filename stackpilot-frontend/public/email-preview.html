@@ -1,8 +1,26 @@
+<!DOCTYPE html>
 <html>
+<head>
+  <title>StackPilot Email Previews</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #e0e0e0; padding: 40px; margin: 0; }
+    h1 { text-align: center; color: #333; margin-bottom: 40px; }
+    .email-container { max-width: 800px; margin: 0 auto 60px auto; }
+    .email-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #555; }
+    iframe { width: 100%; height: 600px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 12px; background: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Live Email Templates Preview</h1>
+  
+  <div class="email-container">
+    <div class="email-title">1. Welcome Email (Premium Dark Theme)</div>
+    <iframe srcdoc="<html>
   <head>
+    <link href=&quot;https://fonts.googleapis.com/css2?family=Calistoga&display=swap&quot; rel=&quot;stylesheet&quot;>
     <style>
       body {
-        font-family: 'Inter', Arial, sans-serif;
+        font-family: &#39;Inter&#39;, Arial, sans-serif;
         line-height: 1.6;
         color: #f5f0e8;
         background-color: #0d0d0d;
@@ -19,11 +37,19 @@
         border: 1px solid #333;
       }
       .header {
-        background: #f5c842;
-        color: #0d0d0d;
+        background: #111111;
+        color: #ffffff;
         padding: 30px 20px;
         text-align: center;
         border-bottom: 2px solid #2a2a2a;
+      }
+      .text-logo {
+        font-family: &#39;Calistoga&#39;, serif;
+        font-size: 36px;
+        font-weight: 400;
+        margin: 0;
+        letter-spacing: -0.5px;
+        color: #ffffff;
       }
       .content {
         padding: 30px;
@@ -53,11 +79,13 @@
     </style>
   </head>
   <body>
-    <div class='container'>
-      <div class='header'>
-        <img src="http://localhost:3000/images/StackPilot%20Logo%20Black.png" alt="StackPilot Logo" style="height: 48px; object-fit: contain;" />
+    <div class=&#39;container&#39;>
+      <div class=&#39;header&#39;>
+        <a href=&quot;https://stackpilot-jext.onrender.com/&quot; style=&quot;text-decoration: none;&quot;>
+          <h1 class=&quot;text-logo&quot;>StackPilot</h1>
+        </a>
       </div>
-      <div class='content'>
+      <div class=&#39;content&#39;>
         <h2>Hi Samyukth,</h2>
         <p>Welcome to StackPilot - your career intelligence platform for
           developers!</p>
@@ -65,10 +93,264 @@
         <ul>
           <li>Uploading your resume for ATS scoring</li>
           <li>Finding your perfect job matches</li>
-          <li>Saving jobs you're interested in</li>
+          <li>Saving jobs you&#39;re interested in</li>
         </ul>
-        <a href='http://localhost:3000/login' class='button'>Go to Dashboard</a>
+        <a href=&#39;https://stackpilot-jext.onrender.com/&#39; class=&#39;button&#39;>Go to Dashboard</a>
       </div>
     </div>
   </body>
+</html>"></iframe>
+  </div>
+
+  <div class="email-container">
+    <div class="email-title">2. Job Matches Email</div>
+    <iframe srcdoc="<html>
+  <head>
+    <link href=&quot;https://fonts.googleapis.com/css2?family=Calistoga&display=swap&quot; rel=&quot;stylesheet&quot;>
+    <style>
+      body {
+        font-family: &#39;Inter&#39;, Arial, sans-serif;
+        line-height: 1.6;
+        color: #f5f0e8;
+        background-color: #0d0d0d;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #333;
+      }
+      .header {
+        background: #111111;
+        color: #ffffff;
+        padding: 30px 20px;
+        text-align: center;
+        border-bottom: 2px solid #2a2a2a;
+      }
+      .text-logo {
+        font-family: &#39;Calistoga&#39;, serif;
+        font-size: 36px;
+        font-weight: 400;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+        color: #ffffff;
+      }
+      .content {
+        padding: 30px;
+        background: #1a1a1a;
+        color: #a0a0a0;
+      }
+      h2 {
+        color: #f5f0e8;
+        margin-top: 0;
+      }
+      p {
+        margin-top: 0;
+      }
+      .job-card {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #222222;
+        border-radius: 8px;
+        border-left: 4px solid #f5c842;
+        color: #f5f0e8;
+      }
+      .job-card h3 {
+        margin: 0 0 5px 0;
+        color: #ffffff;
+      }
+      .badge {
+        background: #333333;
+        color: #f5c842;
+        padding: 4px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #f5c842;
+        color: #0d0d0d;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: #e6b831;
+      }
+    </style>
+  </head>
+  <body>
+    <div class=&#39;container&#39;>
+      <div class=&#39;header&#39;>
+        <a href=&quot;https://stackpilot-jext.onrender.com/&quot; style=&quot;text-decoration: none;&quot;>
+          <h1 class=&quot;text-logo&quot;>StackPilot</h1>
+        </a>
+        <h2 style=&quot;margin: 0; font-size: 20px; color: #a0a0a0; font-weight: normal;&quot;>🎯 Your Top Job Matches</h2>
+      </div>
+      <div class=&#39;content&#39;>
+        <h2>Hi Samyukth,</h2>
+        <p>Here are your top 1 job matches based on your resume:</p>
+
+        {{#each matches}}
+          <div class=&#39;job-card&#39;>
+            <h3>{{this.title}}</h3>
+            <p style=&#39;margin: 0 0 15px 0; color: #a0a0a0; font-size: 14px;&#39;>{{this.company}} • {{this.location}}</p>
+            <div style=&#39;margin-bottom: 15px;&#39;>
+              <span class=&#39;badge&#39;>Match Score: {{this.score}}%</span>
+            </div>
+            <p style=&#39;font-size: 14px;&#39;><strong>Matched Skills:</strong> <span style=&quot;color: #a0a0a0;&quot;>{{this.matchedSkills}}</span></p>
+            {{#if this.missingSkills}}
+              <p style=&#39;font-size: 14px; margin-bottom: 15px;&#39;><strong>Missing Skills:</strong> <span style=&quot;color: #a0a0a0;&quot;>{{this.missingSkills}}</span></p>
+            {{/if}}
+            <a href=&#39;https://stackpilot-jext.onrender.com/&#39; style=&#39;color: #f5c842; text-decoration: none; font-weight: bold; font-size: 14px;&#39;>View Job →</a>
+          </div>
+        {{/each}}
+
+        <center>
+          <a href=&#39;https://stackpilot-jext.onrender.com/&#39; class=&#39;button&#39;>View All Matches</a>
+        </center>
+      </div>
+    </div>
+  </body>
+</html>"></iframe>
+  </div>
+
+  <div class="email-container">
+    <div class="email-title">3. Daily Digest Email</div>
+    <iframe srcdoc="<html>
+  <head>
+    <link href=&quot;https://fonts.googleapis.com/css2?family=Calistoga&display=swap&quot; rel=&quot;stylesheet&quot;>
+    <style>
+      body {
+        font-family: &#39;Inter&#39;, Arial, sans-serif;
+        line-height: 1.6;
+        color: #f5f0e8;
+        background-color: #0d0d0d;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #333;
+      }
+      .header {
+        background: #111111;
+        color: #ffffff;
+        padding: 30px 20px;
+        text-align: center;
+        border-bottom: 2px solid #2a2a2a;
+      }
+      .text-logo {
+        font-family: &#39;Calistoga&#39;, serif;
+        font-size: 36px;
+        font-weight: 400;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+        color: #ffffff;
+      }
+      .content {
+        padding: 30px;
+        background: #1a1a1a;
+        color: #a0a0a0;
+      }
+      h2, h3 {
+        color: #f5f0e8;
+        margin-top: 0;
+      }
+      .stats {
+        display: flex;
+        justify-content: space-around;
+        margin: 30px 0;
+        background: #222222;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #333333;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #f5c842;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: #a0a0a0;
+        margin-top: 5px;
+      }
+      ul li {
+        margin-bottom: 10px;
+        color: #a0a0a0;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #f5c842;
+        color: #0d0d0d;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: #e6b831;
+      }
+    </style>
+  </head>
+  <body>
+    <div class=&#39;container&#39;>
+      <div class=&#39;header&#39;>
+        <a href=&quot;https://stackpilot-jext.onrender.com/&quot; style=&quot;text-decoration: none;&quot;>
+          <h1 class=&quot;text-logo&quot;>StackPilot</h1>
+        </a>
+        <h2 style=&quot;margin: 0; font-size: 20px; color: #a0a0a0; font-weight: normal;&quot;>📊 Your Daily Digest</h2>
+      </div>
+      <div class=&#39;content&#39;>
+        <h2>Hi Samyukth,</h2>
+
+        <div class=&#39;stats&#39;>
+          <div class=&#39;stat&#39;>
+            <div class=&#39;stat-number&#39;>14</div>
+            <div class=&#39;stat-label&#39;>New Jobs</div>
+          </div>
+          <div class=&#39;stat&#39;>
+            <div class=&#39;stat-number&#39;>3</div>
+            <div class=&#39;stat-label&#39;>Saved Jobs</div>
+          </div>
+        </div>
+
+        <h3>Top Matches Today:</h3>
+        <ul>
+          
+            <li>Staff Frontend Engineer at Vercel - 99% match</li>
+            <li>Senior Backend Developer at Stripe - 94% match</li>
+  
+        </ul>
+
+        <center>
+          <a href=&#39;https://stackpilot-jext.onrender.com/&#39; class=&#39;button&#39;>Go to Dashboard</a>
+        </center>
+      </div>
+    </div>
+  </body>
+</html>"></iframe>
+  </div>
+</body>
 </html>

@@ -223,7 +223,7 @@ export class JobsService {
                 this.logger.debug(
                   `[DIAGNOSTICS] Excluded job "${job.title}": Extracted ${extracted.min} > Filter ${filters.experienceMin}`,
                 );
-                (job as any)._excludeFromResults = true;
+                (job as Job & { _excludeFromResults?: boolean })._excludeFromResults = true;
               }
             }
           }
@@ -238,7 +238,7 @@ export class JobsService {
               this.logger.debug(
                 `[DIAGNOSTICS] Overqualified job matched by query?! ${job.title}: DB ${job.experienceRequiredMin} > Filter ${filters.experienceMin}`,
               );
-              (job as any)._excludeFromResults = true;
+              (job as Job & { _excludeFromResults?: boolean })._excludeFromResults = true;
             }
           }
         }
@@ -246,7 +246,7 @@ export class JobsService {
 
       // Filter out jobs that were discovered to be over-qualified after extraction
       const filteredJobs = finalJobs.filter(
-        (j) => !(j as any)._excludeFromResults,
+        (j) => !(j as Job & { _excludeFromResults?: boolean })._excludeFromResults,
       );
       this.logger.debug(
         `[DIAGNOSTICS] jobs after filtering: ${filteredJobs.length}`,

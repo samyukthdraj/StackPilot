@@ -1,77 +1,118 @@
 <html>
   <head>
+    <link href="https://fonts.googleapis.com/css2?family=Calistoga&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Inter', Arial, sans-serif;
         line-height: 1.6;
-        color: #333;
+        color: #f5f0e8;
+        background-color: #0d0d0d;
+        margin: 0;
+        padding: 0;
       }
       .container {
         max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
+        margin: 40px auto;
+        padding: 0;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #333;
       }
       .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
+        background: #111111;
+        color: #ffffff;
+        padding: 30px 20px;
         text-align: center;
+        border-bottom: 2px solid #2a2a2a;
+      }
+      .text-logo {
+        font-family: 'Calistoga', serif;
+        font-size: 36px;
+        font-weight: 400;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+        color: #ffffff;
       }
       .content {
-        padding: 20px;
-        background: #f9f9f9;
+        padding: 30px;
+        background: #1a1a1a;
+        color: #a0a0a0;
+      }
+      h2 {
+        color: #f5f0e8;
+        margin-top: 0;
+      }
+      p {
+        margin-top: 0;
       }
       .job-card {
         margin-bottom: 20px;
-        padding: 15px;
-        background: white;
-        border-radius: 5px;
-        border-left: 4px solid #667eea;
+        padding: 20px;
+        background: #222222;
+        border-radius: 8px;
+        border-left: 4px solid #f5c842;
+        color: #f5f0e8;
+      }
+      .job-card h3 {
+        margin: 0 0 5px 0;
+        color: #ffffff;
       }
       .badge {
-        background: #667eea;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 3px;
+        background: #333333;
+        color: #f5c842;
+        padding: 4px 10px;
+        border-radius: 4px;
         display: inline-block;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #f5c842;
+        color: #0d0d0d;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: #e6b831;
       }
     </style>
   </head>
   <body>
     <div class='container'>
       <div class='header'>
-        <h1>🎯 Your Top Job Matches</h1>
+        <a href="https://stackpilot-jext.onrender.com/" style="text-decoration: none;">
+          <h1 class="text-logo">StackPilot</h1>
+        </a>
+        <h2 style="margin: 0; font-size: 20px; color: #a0a0a0; font-weight: normal;">🎯 Your Top Job Matches</h2>
       </div>
       <div class='content'>
         <h2>Hi {{name}},</h2>
-        <p>Here are your top
-          {{matches.length}}
-          job matches based on your resume:</p>
+        <p>Here are your top {{matches.length}} job matches based on your resume:</p>
 
         {{#each matches}}
           <div class='job-card'>
-            <h3 style='margin: 0 0 5px 0;'>{{this.title}}</h3>
-            <p style='margin: 0 0 10px 0; color: #666;'>{{this.company}}
-              •
-              {{this.location}}</p>
-            <div style='margin-bottom: 10px;'>
+            <h3>{{this.title}}</h3>
+            <p style='margin: 0 0 15px 0; color: #a0a0a0; font-size: 14px;'>{{this.company}} • {{this.location}}</p>
+            <div style='margin-bottom: 15px;'>
               <span class='badge'>Match Score: {{this.score}}%</span>
             </div>
-            <p><strong>Matched Skills:</strong> {{this.matchedSkills}}</p>
+            <p style='font-size: 14px;'><strong>Matched Skills:</strong> <span style="color: #a0a0a0;">{{this.matchedSkills}}</span></p>
             {{#if this.missingSkills}}
-              <p><strong>Missing Skills:</strong> {{this.missingSkills}}</p>
+              <p style='font-size: 14px; margin-bottom: 15px;'><strong>Missing Skills:</strong> <span style="color: #a0a0a0;">{{this.missingSkills}}</span></p>
             {{/if}}
-            <a
-              href='{{this.url}}'
-              style='color: #667eea; text-decoration: none;'
-            >View Job →</a>
+            <a href='https://stackpilot-jext.onrender.com/' style='color: #f5c842; text-decoration: none; font-weight: bold; font-size: 14px;'>View Job →</a>
           </div>
         {{/each}}
 
-        <a
-          href='{{dashboardUrl}}'
-          style='display: block; text-align: center; padding: 10px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;'
-        >View All Matches</a>
+        <center>
+          <a href='https://stackpilot-jext.onrender.com/' class='button'>View All Matches</a>
+        </center>
       </div>
     </div>
   </body>

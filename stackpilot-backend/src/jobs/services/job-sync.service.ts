@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Job } from '../entities/job.entity';
 import { JSearchService, JSearchJob } from './jsearch.service';
@@ -153,7 +153,6 @@ export class JobSyncService {
     try {
       // 1. Try native JSearch metadata first (Highest precision)
       let minExp: number | undefined;
-      let maxExp: number | undefined;
 
       const jExp = jSearchJob.job_required_experience;
       if (jExp?.no_experience_required) {
@@ -174,7 +173,7 @@ export class JobSyncService {
 
       // Merge: Native data takes priority over extracted regex data
       minExp = minExp ?? extracted.min;
-      maxExp = maxExp ?? extracted.max;
+      const maxExp = extracted.max;
 
       if (minExp !== undefined) {
         this.logger.log(

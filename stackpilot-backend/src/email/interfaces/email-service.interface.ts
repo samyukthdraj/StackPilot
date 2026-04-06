@@ -24,11 +24,7 @@ export interface IEmailService {
     name: string,
     data: DailyDigestData,
   ): Promise<void>;
-  sendLimitWarningEmail(
-    email: string,
-    name: string,
-    limitType: 'resume_scans' | 'job_searches',
-    currentUsage: number,
-    limit: number,
+  sendContactEmail(
+    data: { name: string; email: string; subject: string; message: string }
   ): Promise<void>;
 }

@@ -1,45 +1,97 @@
 <html>
   <head>
+    <link href="https://fonts.googleapis.com/css2?family=Calistoga&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Inter', Arial, sans-serif;
         line-height: 1.6;
-        color: #333;
+        color: #f5f0e8;
+        background-color: #0d0d0d;
+        margin: 0;
+        padding: 0;
       }
       .container {
         max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
+        margin: 40px auto;
+        padding: 0;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #333;
       }
       .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
+        background: #111111;
+        color: #ffffff;
+        padding: 30px 20px;
         text-align: center;
+        border-bottom: 2px solid #2a2a2a;
+      }
+      .text-logo {
+        font-family: 'Calistoga', serif;
+        font-size: 36px;
+        font-weight: 400;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+        color: #ffffff;
       }
       .content {
-        padding: 20px;
-        background: #f9f9f9;
+        padding: 30px;
+        background: #1a1a1a;
+        color: #a0a0a0;
+      }
+      h2, h3 {
+        color: #f5f0e8;
+        margin-top: 0;
       }
       .stats {
         display: flex;
         justify-content: space-around;
-        margin: 20px 0;
+        margin: 30px 0;
+        background: #222222;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #333333;
       }
       .stat {
         text-align: center;
       }
       .stat-number {
-        font-size: 24px;
+        font-size: 32px;
         font-weight: bold;
-        color: #667eea;
+        color: #f5c842;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: #a0a0a0;
+        margin-top: 5px;
+      }
+      ul li {
+        margin-bottom: 10px;
+        color: #a0a0a0;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #f5c842;
+        color: #0d0d0d;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: #e6b831;
       }
     </style>
   </head>
   <body>
     <div class='container'>
       <div class='header'>
-        <h1>📊 Your Daily Digest</h1>
+        <a href="https://stackpilot-jext.onrender.com/" style="text-decoration: none;">
+          <h1 class="text-logo">StackPilot</h1>
+        </a>
+        <h2 style="margin: 0; font-size: 20px; color: #a0a0a0; font-weight: normal;">📊 Your Daily Digest</h2>
       </div>
       <div class='content'>
         <h2>Hi {{name}},</h2>
@@ -47,25 +99,24 @@
         <div class='stats'>
           <div class='stat'>
             <div class='stat-number'>{{newJobs}}</div>
-            <div>New Jobs</div>
+            <div class='stat-label'>New Jobs</div>
           </div>
           <div class='stat'>
             <div class='stat-number'>{{savedJobs}}</div>
-            <div>Saved Jobs</div>
+            <div class='stat-label'>Saved Jobs</div>
           </div>
         </div>
 
         <h3>Top Matches Today:</h3>
         <ul>
           {{#each topMatches}}
-            <li>{{this.title}} at {{this.company}} - {{this.score}}% match</li>
+            <li><strong style="color: #f5f0e8;">{{this.title}}</strong> at {{this.company}} - <span style="color: #f5c842;">{{this.score}}% match</span></li>
           {{/each}}
         </ul>
 
-        <a
-          href='{{dashboardUrl}}'
-          style='display: block; text-align: center; padding: 10px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;'
-        >View Dashboard</a>
+        <center>
+          <a href='https://stackpilot-jext.onrender.com/' class='button'>Go to Dashboard</a>
+        </center>
       </div>
     </div>
   </body>

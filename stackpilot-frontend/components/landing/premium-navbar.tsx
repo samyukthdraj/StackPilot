@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 interface PremiumNavbarProps {
   onLoginClick: () => void;
@@ -97,35 +98,28 @@ export function PremiumNavbar({
     return () => clearInterval(checkGSAP);
   }, []);
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleFeaturesClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const featuresSection = document.getElementById("features");
-    if (featuresSection) {
-      featuresSection.scrollIntoView({ behavior: "smooth" });
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      const featuresSection = document.getElementById("features");
+      if (featuresSection) {
+        featuresSection.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
   return (
     <nav ref={navbarRef} className="premium-navbar">
-      <div
-        className="premium-logo"
-        onClick={handleLogoClick}
-        style={{ cursor: "pointer" }}
-      >
+      <Link href="/" className="premium-logo flex items-center" style={{ cursor: "pointer", textDecoration: "none" }}>
         StackPilot
-      </div>
+      </Link>
       <div className="premium-nav-links">
-        <a href="#features" onClick={handleFeaturesClick}>
+        <Link href="/#features" onClick={handleFeaturesClick}>
           Features
-        </a>
+        </Link>
         <button
           onClick={onRegisterClick}
-          className="premium-btn-pill premium-btn-outline magnetic-btn"
+          className="premium-btn-pill premium-btn-outline magnetic-btn ml-4"
         >
           Get Started
         </button>

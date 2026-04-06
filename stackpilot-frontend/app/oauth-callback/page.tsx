@@ -41,7 +41,7 @@ function OAuthCallbackContent() {
         } else {
           throw new Error("Failed to fetch user profile");
         }
-      } catch (err) {
+      } catch {
         setError("Error completing authentication. Please try again.");
         setTimeout(() => router.push("/"), 3000);
       }

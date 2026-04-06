@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
+
 export function PremiumFooter() {
   const handleFeaturesClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const featuresSection = document.getElementById("features");
-    if (featuresSection) {
-      featuresSection.scrollIntoView({ behavior: "smooth" });
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      const featuresSection = document.getElementById("features");
+      if (featuresSection) {
+        featuresSection.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -24,18 +28,21 @@ export function PremiumFooter() {
 
         <div className="premium-footer-links">
           <div className="premium-label-small premium-mb-40">PRODUCT</div>
-          <a href="#features" onClick={handleFeaturesClick}>
-            Features
-          </a>
-          <a href="#">Pricing</a>
-          <a href="#">FAQ</a>
+          <Link href="/features">
+            Features Page
+          </Link>
+          <Link href="/#features" onClick={handleFeaturesClick}>
+            Features Setup
+          </Link>
+          <Link href="/pricing">Pricing</Link>
+          <Link href="/faq">FAQ</Link>
         </div>
 
         <div className="premium-footer-links">
           <div className="premium-label-small premium-mb-40">COMPANY</div>
-          <a href="#">About</a>
-          <a href="#">Blog</a>
-          <a href="#">Contact</a>
+          <Link href="/about">About</Link>
+          <Link href="/blog">Blog</Link>
+          <Link href="/contact">Contact</Link>
         </div>
       </div>
 

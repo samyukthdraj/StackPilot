@@ -133,11 +133,11 @@ StackPilot provides:
 
 - **Framework**: NestJS 10
 - **Language**: TypeScript (Strict mode)
-- **Database**: PostgreSQL (Supabase)
+- **Database**: PostgreSQL (Neon Tech)
 - **ORM**: TypeORM
-- **Authentication**: JWT + Passport
+- **Authentication**: JWT + Passport + OAuth (Google, GitHub, Microsoft)
 - **Validation**: class-validator
-- **PDF Parsing**: pdf-parse
+- **AI Parsing**: Gemini API for accurate resume extraction
 - **Email**: Nodemailer + Handlebars
 - **Scheduled Jobs**: @nestjs/schedule
 - **Job API**: Adzuna Integration
@@ -149,7 +149,7 @@ StackPilot provides:
 - **Linting**: ESLint
 - **Code Formatting**: Prettier (optional)
 - **API Testing**: Postman
-- **Database**: Supabase (PostgreSQL)
+- **Database**: Neon (Serverless PostgreSQL)
 
 ---
 
@@ -196,7 +196,7 @@ StackPilot provides:
 └─────────────────────────────────────────────────────────────┘
                               ↕
 ┌─────────────────────────────────────────────────────────────┐
-│                    PostgreSQL (Supabase)                     │
+│                    PostgreSQL (Neon)                         │
 │  - Users, Resumes, Jobs, Matches, Saved Jobs, Usage Logs   │
 └─────────────────────────────────────────────────────────────┘
                               ↕
@@ -215,7 +215,7 @@ StackPilot provides:
 
 - **Node.js**: v18 or higher
 - **npm**: v9 or higher
-- **PostgreSQL**: Database (Supabase recommended)
+- **PostgreSQL**: Database (Neon recommended)
 - **Adzuna API**: Free tier account
 - **Gmail**: For email notifications
 
@@ -250,8 +250,13 @@ npm run dev
 
 4. **Access the application**
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8000` (backend port)
+- **Live Production URLs**:
+  - Frontend: [https://stackpilot-jext.onrender.com](https://stackpilot-jext.onrender.com)
+  - Backend API: [https://stackpilot-backend.onrender.com](https://stackpilot-backend.onrender.com)
+
+- **Local Development**:
+  - Frontend: `http://localhost:3000`
+  - Backend API: `http://localhost:8080` (or configured PORT)
 
 ### Detailed Setup
 
@@ -385,10 +390,10 @@ cd stackpilot-backend
 # Follow platform-specific deployment guide
 ```
 
-### Database (Supabase)
+### Database (Neon)
 
-- Create project at [supabase.com](https://supabase.com)
-- Copy pooling connection string to `.env` to support IPv4
+- Create project at [neon.tech](https://neon.tech)
+- Copy the connection string to `.env`
 
 ---
 
@@ -430,7 +435,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Adzuna](https://www.adzuna.com/) for job data API
-- [Supabase](https://supabase.com/) for database hosting
+- [Neon Tech](https://neon.tech/) for serverless database hosting
 - [Render](https://render.com/) for frontend hosting
 - [NestJS](https://nestjs.com/) for the amazing backend framework
 - [Next.js](https://nextjs.org/) for the powerful React framework
@@ -451,8 +456,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Phase 1: MVP ✅
 
-- [x] Authentication system
-- [x] Resume upload & parsing
+- [x] Authentication system (JWT + OAuth)
+- [x] Resume upload & parsing (Gemini AI Powered)
 - [x] ATS scoring algorithm
 - [x] Job integration (Adzuna)
 - [x] Job matching algorithm
