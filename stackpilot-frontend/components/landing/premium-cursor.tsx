@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 export function PremiumCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
@@ -114,13 +113,11 @@ export function PremiumCursor() {
     };
 
     const handleMouseEnter = () => {
-      setIsHovering(true);
       cursor.classList.add("hover");
       ring.classList.add("hover");
     };
 
     const handleMouseLeave = () => {
-      setIsHovering(false);
       cursor.classList.remove("hover");
       ring.classList.remove("hover");
     };
@@ -151,19 +148,7 @@ export function PremiumCursor() {
 
   return (
     <>
-      <div ref={cursorRef} className="premium-cursor">
-        {isHovering && (
-          <svg
-            className="cursor-pointer-icon"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M8.5 2.5L8.5 15.5L11.5 12.5L14.5 19.5L17.5 18.5L14.5 11.5L18.5 11.5L8.5 2.5Z" />
-          </svg>
-        )}
-      </div>
+      <div ref={cursorRef} className="premium-cursor" />
       <div ref={ringRef} className="premium-cursor-ring" />
     </>
   );

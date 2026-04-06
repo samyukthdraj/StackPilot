@@ -82,44 +82,16 @@ html {
 }
 
 .premium-cursor.hover {
-  width: 50px;
-  height: 50px;
-  background: transparent;
-  border: 2px solid #f5c842;
-  transform: translate(-50%, -50%);
-}
-
-.premium-cursor.dark-mode.hover {
-  border-color: #f5c842;
+  transform: translate(-50%, -50%) scale(1.8);
 }
 
 .premium-cursor-ring.hover {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #f5c842;
-  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  opacity: 0.6;
 }
 
-.premium-cursor-ring.dark-mode.hover {
-  border-color: #f5c842;
-}
 
-.cursor-pointer-icon {
-  color: #f5c842;
-  width: 20px;
-  height: 20px;
-  animation: pointerPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pointerPulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
 
 .premium-cursor.click {
   animation: cursorClick 0.3s ease;
