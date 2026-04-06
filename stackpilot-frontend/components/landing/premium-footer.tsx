@@ -41,10 +41,16 @@ export function PremiumFooter() {
           <Link href="/blog">Blog</Link>
           <Link href="/contact">Contact</Link>
         </div>
+
+        <div className="premium-footer-links">
+          <div className="premium-label-small premium-mb-40">LEGAL</div>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms &amp; Conditions</Link>
+        </div>
       </div>
 
       <div className="premium-footer-bottom">
-        © 2024 StackPilot. All rights reserved.
+        © 2025 StackPilot. All rights reserved.
       </div>
     </footer>
   );
