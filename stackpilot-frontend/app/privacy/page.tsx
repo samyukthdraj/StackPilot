@@ -9,7 +9,7 @@ const Section = ({
   children: React.ReactNode;
 }) => (
   <div className="mb-10">
-    <h2 className="text-xl font-bold text-[#f5c842] mb-4 uppercase tracking-widest text-sm">
+    <h2 className="font-bold text-[#f5c842] mb-4 uppercase tracking-widest text-sm">
       {title}
     </h2>
     <div className="text-gray-300 leading-relaxed space-y-3 text-[15px]">

@@ -44,8 +44,8 @@ export function PremiumFooter() {
 
         <div className="premium-footer-links">
           <div className="premium-label-small premium-mb-40">LEGAL</div>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/terms">Terms &amp; Conditions</Link>
+          <Link href="/privacy" data-cursor="golden">Privacy Policy</Link>
+          <Link href="/terms" data-cursor="golden">Terms &amp; Conditions</Link>
         </div>
       </div>
 

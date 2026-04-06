@@ -23,7 +23,7 @@ export default function BlogPage() {
               <div className="group cursor-pointer bg-[#111] border border-white/10 rounded-2xl overflow-hidden hover:border-[#f5c842]/50 transition-all duration-300 hover:shadow-[0_0_30px_-10px_rgba(245,200,66,0.15)] hover:-translate-y-1 h-full flex flex-col">
                 <div className="h-48 bg-[url('https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center relative border-b border-white/5">
                    <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors duration-500"></div>
-                   <div className="absolute inset-0 opacity-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#f5c842]/20 to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
+                   <div className="absolute inset-0 opacity-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-[#f5c842]/20 to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="flex justify-between items-center mb-4">

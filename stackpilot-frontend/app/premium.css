@@ -82,15 +82,20 @@ html {
 }
 
 .premium-cursor.hover {
-  transform: translate(-50%, -50%) scale(1.8);
+  background: transparent;
+  transform: translate(-50%, -50%);
+  box-shadow: none;
+  width: 22px;
+  height: 22px;
 }
 
 .premium-cursor-ring.hover {
-  width: 50px;
-  height: 50px;
-  opacity: 0.6;
+  width: 52px;
+  height: 52px;
+  border-color: #f5c842;
+  opacity: 0.7;
+  box-shadow: 0 0 14px rgba(245, 200, 66, 0.2);
 }
-
 
 
 .premium-cursor.click {

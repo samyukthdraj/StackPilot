@@ -16,7 +16,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { PremiumWrapper } from "./premium-wrapper";
-import { PremiumCursor } from "./premium-cursor";
 import { PremiumNavbar } from "./premium-navbar";
 import { PremiumFooter } from "./premium-footer";
 import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa6";
@@ -237,7 +236,6 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
 
   return (
     <PremiumWrapper>
-      <PremiumCursor />
       <PremiumNavbar
         onLoginClick={triggerLogin}
         onRegisterClick={triggerRegister}

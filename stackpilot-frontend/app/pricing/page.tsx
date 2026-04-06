@@ -20,7 +20,7 @@ export default function PricingPage() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Free Tier */}
-          <div className="p-[1px] rounded-2xl bg-gradient-to-br from-white/10 to-transparent">
+          <div className="p-px rounded-2xl bg-linear-to-br from-white/10 to-transparent">
             <div className="h-full bg-[#111111] rounded-2xl p-8 flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">Basic Access</h3>
               <p className="text-gray-400 mb-6">Everything you need to get started right now.</p>
@@ -43,14 +43,14 @@ export default function PricingPage() {
           </div>
 
           {/* Pro Tier */}
-          <div className="p-[1px] rounded-2xl bg-gradient-to-br from-[#f5c842]/50 to-[#f5c842]/10 relative shadow-[0_0_50px_-12px_rgba(245,200,66,0.2)] transform md:-translate-y-4">
+          <div className="p-px rounded-2xl bg-linear-to-br from-[#f5c842]/50 to-[#f5c842]/10 relative shadow-[0_0_50px_-12px_rgba(245,200,66,0.2)] transform md:-translate-y-4">
             <div className="absolute top-0 right-8 transform -translate-y-1/2">
               <span className="bg-[#f5c842] text-[#111] text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-lg">
                 <Sparkles className="w-3 h-3 mr-1" />
                 COMING SOON
               </span>
             </div>
-            <div className="h-full bg-gradient-to-b from-[#1a1814] to-[#111111] rounded-2xl p-8 flex flex-col relative overflow-hidden">
+            <div className="h-full bg-linear-to-b from-[#1a1814] to-[#111111] rounded-2xl p-8 flex flex-col relative overflow-hidden">
               <h3 className="text-2xl font-bold text-[#f5c842] mb-2">Pro Copilot</h3>
               <p className="text-gray-400 mb-6">Advanced AI generation capabilities via Stripe payments.</p>
               <div className="text-4xl font-bold text-white mb-6">$19<span className="text-lg text-gray-500 font-normal">/mo</span></div>

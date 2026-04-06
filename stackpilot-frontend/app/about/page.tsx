@@ -42,7 +42,7 @@ export default function AboutPage() {
             The Team
           </h2>
           <div className="flex flex-col items-center justify-center p-8 bg-[#111] border border-white/10 rounded-2xl max-w-md mx-auto">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#f5c842] to-yellow-600 rounded-full mb-6 flex items-center justify-center text-3xl font-black text-[#111] shadow-lg">
+            <div className="w-24 h-24 bg-linear-to-br from-[#f5c842] to-yellow-600 rounded-full mb-6 flex items-center justify-center text-3xl font-black text-[#111] shadow-lg">
               SD
             </div>
             <h3 className="text-xl font-bold text-white mb-1">

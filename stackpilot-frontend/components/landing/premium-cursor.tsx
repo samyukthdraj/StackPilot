@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { usePathname } from "next/navigation";
 
 export function PremiumCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const pathname = usePathname();
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
@@ -104,6 +107,11 @@ export function PremiumCursor() {
     };
 
     const handleMouseDown = () => {
+      // Force exit hover state on click to prevent stuck cursor on navigation/modal open
+      setIsHovering(false);
+      cursor.classList.remove("hover", "golden");
+      ring.classList.remove("hover", "golden");
+      
       cursor.classList.add("click");
       ring.classList.add("click");
       setTimeout(() => {
@@ -112,14 +120,31 @@ export function PremiumCursor() {
       }, 300);
     };
 
-    const handleMouseEnter = () => {
+    // Reset cursor state on pathname change
+    const handlePathChange = () => {
+      setIsHovering(false);
+      cursor.classList.remove("hover", "golden");
+      ring.classList.remove("hover", "golden");
+    };
+    handlePathChange();
+
+    const handleMouseEnter = (e: Event) => {
+      setIsHovering(true);
       cursor.classList.add("hover");
       ring.classList.add("hover");
+      const target = e.currentTarget as HTMLElement;
+      if (target?.closest('[data-cursor="golden"]') || target?.getAttribute('data-cursor') === 'golden') {
+        cursor.classList.add("golden");
+        ring.classList.add("golden");
+      }
     };
 
     const handleMouseLeave = () => {
+      setIsHovering(false);
       cursor.classList.remove("hover");
       ring.classList.remove("hover");
+      cursor.classList.remove("golden");
+      ring.classList.remove("golden");
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -144,11 +169,28 @@ export function PremiumCursor() {
       document.removeEventListener("mousedown", handleMouseDown);
       observer.disconnect();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, pathname]);
 
   return (
     <>
-      <div ref={cursorRef} className="premium-cursor" />
+      <div ref={cursorRef} className="premium-cursor">
+        {isHovering && (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="#f5c842"
+            style={{
+              filter: "drop-shadow(0 0 5px rgba(245,200,66,0.85))",
+              pointerEvents: "none",
+              transform: "translate(-2px, -2px)"
+            }}
+          >
+            {/* Premium Mouse Pointer Cursor */}
+            <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.83-4.83 2.3 5.42c.1.23.36.33.59.23l2.42-1.03c.23-.1.33-.36.23-.59l-2.35-5.54 6.33.61c.32.03.52-.34.33-.6l-15.15-15.6c-.23-.24-.6-.08-.6.23z" />
+          </svg>
+        )}
+      </div>
       <div ref={ringRef} className="premium-cursor-ring" />
     </>
   );
