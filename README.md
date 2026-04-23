@@ -42,10 +42,10 @@
 StackPilot provides:
 
 - ✅ **Instant ATS scoring** with detailed feedback
-- 🎯 **AI-powered job matching** based on skills and experience
-- 📊 **Skill gap analysis** with learning recommendations
-- 💼 **Job application tracking** with notes and tags
-- 📈 **Career analytics** to track progress
+- 🎯 **AI-powered job matching** tailored for the **Indian & Global Markets**
+- 📊 **Dynamic Career Intelligence** with daily usage tracking
+- 💼 **Premium Experience** with interactive cursors and personalized greetings
+- 📈 **Career analytics** with real-time system capacity monitoring
 
 ---
 
@@ -74,8 +74,9 @@ StackPilot provides:
   - 25% Keyword Relevance
   - 10% Experience Level
   - 5% Job Recency
-- **Real-time job sync** from Adzuna API
-- **Filter by country, role, salary, date**
+- **Multi-Provider Search**: Primary local engine with JSearch fallback
+- **Market Focus**: Optimized for **India** and global tech hubs
+- **Smart Filtering**: Default searches focused on 30-day windows and broad experience levels
 - **Match score visualization** with radar charts
 - **Skill gap identification**
 
@@ -89,11 +90,11 @@ StackPilot provides:
 
 #### 4. 📊 Career Dashboard
 
-- **Activity statistics** with interactive charts
-- **Usage tracking** (resume scans, job searches)
-- **Profile management**
-- **Notification preferences**
-- **Progress visualization**
+- **Activity statistics** with interactive daily usage grids
+- **Greeting Engine**: 40+ randomized, time-of-day aware greeting suites
+- **Profile management** with secure password recovery flow
+- **Interactive UX**: Premium "Golden Cursor" effects on interactive elements
+- **Glassmorphic UI**: High-end aesthetic with vibrant gradients and micro-animations
 
 #### 5. 📧 Email Notifications
 
@@ -459,10 +460,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Authentication system (JWT + OAuth)
 - [x] Resume upload & parsing (Gemini AI Powered)
 - [x] ATS scoring algorithm
-- [x] Job integration (Adzuna)
-- [x] Job matching algorithm
-- [x] Basic dashboard
-- [x] Email notifications
+- [x] Multi-Provider Job Integration (Adzuna + JSearch)
+- [x] Indian Market Optimization (30-day default window)
+- [x] Dynamic Greeting Engine & Premium Cursor UX
+- [x] Automated Password Recovery System
+- [x] Career Analytics Dashboard
+- [x] Email Notification Suite
 
 ### Phase 2: Enhancement 🚧
 
