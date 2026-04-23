@@ -7,11 +7,14 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
 import { animations } from "@/public/icons/lordicon";
+import { extractErrorMessage } from "@/lib/utils";
 import { apiClient } from "@/lib/api/client";
 import { Resume } from "@/lib/types/api";
 import { useRouter } from "next/navigation";
+import { useUsage } from "@/lib/hooks/use-usage";
 import { toast } from "@/components/ui/use-toast";
 import { AxiosError } from "axios";
+import { format } from "date-fns";
 import { ATSScoreOverview } from "@/components/resumes/ats-score-overview";
 
 interface ResumeUploaderProps {
@@ -20,11 +23,13 @@ interface ResumeUploaderProps {
 
 // Define error response type
 interface ErrorResponse {
-  message?: string;
+  message?: string | string[];
+  resetAt?: string;
 }
 
 export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
   const router = useRouter();
+  const { data: usage, isLoading: isUsageLoading } = useUsage();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [file, setFile] = useState<File | null>(null);
@@ -115,12 +120,21 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
           } else if (status === 401) {
             errorMessage = "Unauthorized.";
             detailedIssue = "Your session may have expired. Please log in again.";
+          } else if (status === 403) {
+            errorMessage = "Daily Quota Exceeded";
+            const resetAt = data.resetAt;
+            if (resetAt) {
+              const resetDate = new Date(resetAt);
+              detailedIssue = `You have reached your daily upload limit. Your quota will reset on ${format(resetDate, "MMMM do")} at ${format(resetDate, "h:mm aa")}.`;
+            } else {
+              detailedIssue = extractErrorMessage(data, "Daily scan limit reached. Please upgrade to Pro.");
+            }
           } else if (status >= 500) {
             errorMessage = "Server error.";
             detailedIssue = "Our analysis engine encountered a problem. Our team has been notified.";
           } else {
-            errorMessage = data.message || "Upload failed.";
-            detailedIssue = "Please ensure the file is a valid PDF and try again.";
+            errorMessage = extractErrorMessage(data, "Upload failed.");
+            detailedIssue = status === 400 ? "Please check your file and try again." : "Please try again later.";
           }
         }
       } else if (error instanceof Error) {
@@ -173,6 +187,69 @@ export function ResumeUploader({ onSuccess }: ResumeUploaderProps) {
           </Button>
         </Card>
       </div>
+    );
+  }
+
+  // Quota blocking logic
+  const quotaReached = 
+    usage?.resumeScans && 
+    usage.resumeScans.used >= usage.resumeScans.limit;
+
+  if (!isUsageLoading && quotaReached) {
+    const resetDate = usage.resumeScans.resetAt ? new Date(usage.resumeScans.resetAt) : null;
+    
+    return (
+      <Card className="p-12 text-center space-y-8 bg-[#111] border-[#222] shadow-2xl relative overflow-hidden group">
+        <div className="absolute inset-0 bg-linear-to-b from-[#f5c842]/5 to-transparent opacity-50" />
+        
+        <div className="relative z-10 space-y-6">
+          <div className="inline-flex p-4 rounded-full bg-[#f5c842]/10 border border-[#f5c842]/20 mb-2">
+            <LordiconWrapper
+              icon={animations.error}
+              size={64}
+              color="#f5c842"
+              state="loop"
+            />
+          </div>
+          
+          <div className="space-y-3">
+            <h2 className="text-3xl font-bold text-[#f5f0e8] font-playfair">
+              Daily Limit Reached
+            </h2>
+            <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+              You&apos;ve used all {usage.resumeScans.limit} daily scans included in your current plan. 
+              Our AI engines are cooling down!
+            </p>
+          </div>
+
+          {resetDate && (
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl py-4 px-6 inline-block">
+              <p className="text-sm text-gray-500 mb-1 font-medium uppercase tracking-widest text-[10px]">
+                Next Upload Window
+              </p>
+              <p className="text-[#f5f0e8] font-semibold">
+                {format(resetDate, "MMMM do")} at {format(resetDate, "h:mm aa")}
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <Button
+              className="bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-bold py-6 px-8 rounded-full border-none shadow-[0_0_20px_rgba(245,200,66,0.2)] transition-all hover:scale-105"
+              onClick={() => router.push("/premium")}
+            >
+              Upgrade to Pro for Unlimited Scans
+            </Button>
+            <Button
+              variant="outline"
+              className="border-[#2a2a2a] text-gray-400 hover:text-white hover:bg-white/5 py-6 px-8 rounded-full transition-all"
+              onClick={() => router.push("/dashboard")}
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </Card>
     );
   }
 

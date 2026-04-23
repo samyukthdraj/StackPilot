@@ -47,7 +47,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-transparent text-[#f5f0e8] transition-colors duration-300">
       <div className="w-full">
         <Header />
-        <main className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <main className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-x-hidden">
           <div className="animate-fade-in-up">{children}</div>
         </main>
       </div>

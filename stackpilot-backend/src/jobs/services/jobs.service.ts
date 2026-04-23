@@ -3,7 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { Job } from '../entities/job.entity';
 import { JSearchService } from './jsearch.service';
+import { AdzunaService } from './adzuna.service';
+import { ArbeitnowService } from './arbeitnow.service';
 import { JobSyncService } from './job-sync.service';
+import { UsageService } from '../../usage/services/usage.service';
+import { UsageAction } from '../../usage/entities/usage-log.entity';
+import { JSearchQuota } from '../../usage/entities/jsearch-quota.entity';
+import { AdzunaQuota } from '../../usage/entities/adzuna-quota.entity';
+import {
+  EXCLUDE_KEYWORDS,
+  IT_KEYWORDS,
+  SENIOR_KEYWORDS,
+} from '../jobs.constants';
 
 export interface JobFilters {
   country?: string;
@@ -20,6 +31,10 @@ export interface JobFilters {
   offset?: number;
 }
 
+export interface FilteredJob extends Job {
+  _excludeFromResults?: boolean;
+}
+
 @Injectable()
 export class JobsService {
   private readonly logger = new Logger(JobsService.name);
@@ -27,17 +42,37 @@ export class JobsService {
   constructor(
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
+    @InjectRepository(JSearchQuota)
+    private quotaRepository: Repository<JSearchQuota>,
+    @InjectRepository(AdzunaQuota)
+    private adzunaQuotaRepository: Repository<AdzunaQuota>,
     private jsearchService: JSearchService,
+    private adzunaService: AdzunaService,
+    private arbeitnowService: ArbeitnowService,
     private jobSyncService: JobSyncService,
+    private usageService: UsageService,
   ) {}
 
-  async findJobs(filters: JobFilters): Promise<{
+  async findJobs(
+    filters: JobFilters,
+    userId?: string,
+  ): Promise<{
     jobs: Job[];
     total: number;
     itCount: number;
     otherCount: number;
+    activeProvider?: string;
+    quota?: { remaining: number; resetAt: Date | null } | null;
+    adzunaQuota?: { remaining: number; resetAt: Date | null } | null;
   }> {
     try {
+      // Track usage if it's a search action and we have a userId
+      if (userId && (filters.search || filters.title)) {
+        await this.usageService.trackUsage(userId, UsageAction.JOB_SEARCH, {
+          query: filters.search || filters.title,
+        });
+      }
+
       const queryBuilder = this.jobRepository.createQueryBuilder('job');
 
       if (filters.country) {
@@ -52,43 +87,6 @@ export class JobsService {
         });
       }
 
-      const needsLiveSearch =
-        filters.search ||
-        filters.title ||
-        filters.country ||
-        filters.companies?.length ||
-        filters.locations?.length;
-
-      if (needsLiveSearch) {
-        let searchTerm = filters.search || filters.title || '';
-
-        if (!searchTerm && filters.companies?.length) {
-          searchTerm = filters.companies.join(' ');
-        } else if (!searchTerm && filters.locations?.length) {
-          searchTerm = filters.locations.join(' ');
-        } else if (!searchTerm) {
-          searchTerm = 'software engineer';
-        }
-
-        try {
-          const jJobs = await this.jsearchService.searchJobs(
-            searchTerm,
-            filters.country || 'us',
-          );
-
-          if (jJobs && jJobs.length > 0) {
-            for (const jj of jJobs.slice(0, 15)) {
-              await this.jobSyncService.saveJob(
-                jj as any,
-                filters.country || 'us',
-              );
-            }
-          }
-        } catch (e) {
-          this.logger.error('Error fetching live jobs:', e);
-        }
-      }
-
       if (filters.postedAt) {
         queryBuilder.andWhere('job.postedAt >= :postedAt', {
           postedAt: filters.postedAt,
@@ -100,6 +98,62 @@ export class JobsService {
           '(job.title ILIKE :search OR job.company ILIKE :search OR job.description ILIKE :search)',
           { search: `%${filters.search}%` },
         );
+      }
+
+      // 1. Fetch quota info early to determine active provider
+      const [quota, adzunaQuota] = await Promise.all([
+        this.quotaRepository.findOne({ where: { id: 'singleton' } }),
+        this.adzunaQuotaRepository.findOne({ where: { id: 'singleton' } }),
+      ]);
+
+      // 2. Identify initial active provider based on quota
+      let activeProvider = 'jsearch';
+      if (quota && quota.requestsRemaining <= 0) {
+        activeProvider = 'adzuna';
+        if (adzunaQuota && adzunaQuota.requestsRemaining <= 0) {
+          activeProvider = 'arbeitnow';
+        }
+      }
+
+      // 3. Trigger live search/fallback if results are low
+      // Even if NO keyword is provided, we use a default niche query to populate the country's dashboard.
+      const existingCount = await queryBuilder.getCount();
+      const limit = filters.limit || 20;
+
+      if (existingCount < limit) {
+        const fallbackQuery =
+          filters.search || filters.title || 'Software Engineer';
+        this.logger.log(
+          `Low local results (${existingCount}) for "${fallbackQuery}" in ${filters.country || 'us'}. Triggering external search via ${activeProvider}...`,
+        );
+
+        const actualProvider = await this.jobSyncService.fetchAndSaveJobs(
+          fallbackQuery,
+          filters.country || 'us',
+        );
+
+        // Even if actualProvider is 'none' (meaning no jobs found), 
+        // it still tells us which provider was attempted last.
+        if (actualProvider !== 'error' && actualProvider !== 'local') {
+          activeProvider = actualProvider;
+        }
+
+        this.logger.debug(
+          `Effective activeProvider after sync: ${activeProvider}`,
+        );
+      }
+
+      // 4. Double check: If the primary quota is dead, we MUST be in a fallback state
+      // This is a safety net for when a sync wasn't even triggered.
+      if (
+        activeProvider === 'jsearch' &&
+        quota &&
+        quota.requestsRemaining <= 0
+      ) {
+        activeProvider = 'adzuna';
+        if (adzunaQuota && adzunaQuota.requestsRemaining <= 0) {
+          activeProvider = 'arbeitnow';
+        }
       }
 
       if (filters.companies && filters.companies.length > 0) {
@@ -147,19 +201,7 @@ export class JobsService {
         // Extra protection: if user is looking for entry level (0-1 yrs),
         // exclude obvious senior/lead roles even if experience is NULL/unspecified.
         if (filters.experienceMin <= 1) {
-          const seniorKeywords = [
-            'Senior',
-            'Lead',
-            'Architect',
-            'Principal',
-            'Staff',
-            'VP',
-            'Manager',
-            'Expert',
-            'Head',
-            'Director',
-          ];
-          seniorKeywords.forEach((kw, i) => {
+          SENIOR_KEYWORDS.forEach((kw, i) => {
             queryBuilder.andWhere(`job.title NOT ILIKE :skw${i}`, {
               [`skw${i}`]: `%${kw}%`,
             });
@@ -175,78 +217,11 @@ export class JobsService {
         .getManyAndCount();
 
       // Self-healing: try to re-extract experience for any job in the list that is missing it
-      // This ensures cards show the data immediately without needing to click view details
-      this.logger.debug(
-        `[DIAGNOSTICS] jobs initially fetched: ${jobs.length}. experienceMin filter: ${filters.experienceMin}`,
-      );
-      const finalJobs = [...jobs];
-      for (const job of finalJobs) {
-        if (
-          job.experienceRequiredMin === null ||
-          job.experienceRequiredMin === undefined ||
-          job.experienceRequiredMin === 0 // Force re-check for 0s as they are often defaults
-        ) {
-          const extracted =
-            this.jobSyncService.extractExperienceFromDescription(
-              job.description || '',
-              job.title,
-            );
-          if (
-            extracted.min !== undefined &&
-            extracted.min !== job.experienceRequiredMin
-          ) {
-            this.logger.debug(
-              `[DIAGNOSTICS] Self-healing "${job.title}": Corrected ${job.experienceRequiredMin} -> ${extracted.min} years`,
-            );
-            job.experienceRequiredMin = extracted.min;
-            job.experienceRequiredMax = extracted.max;
-
-            // Asynchronous update to DB
-            this.jobRepository
-              .update(job.id, {
-                experienceRequiredMin: extracted.min,
-                experienceRequiredMax: extracted.max,
-              })
-              .catch((err) =>
-                this.logger.error(
-                  `Self-heal update failed for job ${job.id}`,
-                  err,
-                ),
-              );
-
-            // POST-FETCH FILTERING: If it no longer matches the user's filter, mark it for exclusion
-            if (
-              filters.experienceMin !== undefined &&
-              filters.experienceMin !== -1
-            ) {
-              if (extracted.min > filters.experienceMin) {
-                this.logger.debug(
-                  `[DIAGNOSTICS] Excluded job "${job.title}": Extracted ${extracted.min} > Filter ${filters.experienceMin}`,
-                );
-                (job as Job & { _excludeFromResults?: boolean })._excludeFromResults = true;
-              }
-            }
-          }
-        } else {
-          // If the job already has a valid experience required in the database > 0
-          // and the query SOMEHOW matched it (e.g. it was a null check)
-          if (
-            filters.experienceMin !== undefined &&
-            filters.experienceMin !== -1
-          ) {
-            if (job.experienceRequiredMin > filters.experienceMin) {
-              this.logger.debug(
-                `[DIAGNOSTICS] Overqualified job matched by query?! ${job.title}: DB ${job.experienceRequiredMin} > Filter ${filters.experienceMin}`,
-              );
-              (job as Job & { _excludeFromResults?: boolean })._excludeFromResults = true;
-            }
-          }
-        }
-      }
+      this.selfHealJobs(jobs, filters);
 
       // Filter out jobs that were discovered to be over-qualified after extraction
-      const filteredJobs = finalJobs.filter(
-        (j) => !(j as Job & { _excludeFromResults?: boolean })._excludeFromResults,
+      const filteredJobs = jobs.filter(
+        (j: Job & { _excludeFromResults?: boolean }) => !j._excludeFromResults,
       );
       this.logger.debug(
         `[DIAGNOSTICS] jobs after filtering: ${filteredJobs.length}`,
@@ -256,54 +231,14 @@ export class JobsService {
       const adjustedJobs = filteredJobs;
 
       // Categorical total counts across all pages
-      const itKeywords = [
-        'developer',
-        'qa',
-        'sde',
-        'software',
-        'front end',
-        'backend',
-        'full stack',
-        'devops',
-        'architect',
-        'programmer',
-        'coding',
-        'web',
-        'app',
-        'react',
-        'node',
-        'python',
-        'java',
-        'typescript',
-        'javascript',
-        'c#',
-        'dotnet',
-        'scientist',
-        'computing',
-        'ios',
-        'android',
-      ];
-      const excludeKeywords = [
-        'electrical',
-        'instrumentation',
-        'civil',
-        'mechanical',
-        'structural',
-        'construction',
-        'medical',
-        'nursing',
-        'marketing',
-        'sales',
-      ];
+      const itSql = `(${IT_KEYWORDS.map((_, i) => `job.title ILIKE :itkw${i}`).join(' OR ')})`;
+      const exSql = `NOT (${EXCLUDE_KEYWORDS.map((_, i) => `job.title ILIKE :exkw${i}`).join(' OR ')})`;
 
-      const itSql = `(${itKeywords.map((_, i) => `job.title ILIKE :itkw${i}`).join(' OR ')})`;
-      const exSql = `NOT (${excludeKeywords.map((_, i) => `job.title ILIKE :exkw${i}`).join(' OR ')})`;
-
-      const itParams = itKeywords.reduce(
+      const itParams = IT_KEYWORDS.reduce(
         (acc, kw, i) => ({ ...acc, [`itkw${i}`]: `%${kw}%` }),
         {},
       );
-      const exParams = excludeKeywords.reduce(
+      const exParams = EXCLUDE_KEYWORDS.reduce(
         (acc, kw, i) => ({ ...acc, [`exkw${i}`]: `%${kw}%` }),
         {},
       );
@@ -313,6 +248,13 @@ export class JobsService {
         const qb = this.jobRepository.createQueryBuilder('job');
         if (filters.country)
           qb.andWhere('job.country = :country', { country: filters.country });
+
+        if (filters.postedAt) {
+          qb.andWhere('job.postedAt >= :postedAt', {
+            postedAt: filters.postedAt,
+          });
+        }
+
         if (filters.companies?.length)
           qb.andWhere('job.company IN (:...companies)', {
             companies: filters.companies,
@@ -330,14 +272,28 @@ export class JobsService {
             salaryMin: filters.salaryMin,
           });
 
-        if (filters.experienceMin !== undefined) {
+        if (
+          filters.experienceMin !== undefined &&
+          filters.experienceMin !== -1
+        ) {
           if (filters.experienceMin === 0) {
             qb.andWhere(
               '(job.experienceRequiredMin <= 0 OR job.experienceRequiredMin IS NULL)',
             );
           } else {
-            qb.andWhere('job.experienceRequiredMin <= :expVal', {
-              expVal: filters.experienceMin,
+            qb.andWhere(
+              '(job.experienceRequiredMin <= :expVal OR job.experienceRequiredMin IS NULL)',
+              {
+                expVal: filters.experienceMin,
+              },
+            );
+          }
+
+          if (filters.experienceMin <= 1) {
+            SENIOR_KEYWORDS.forEach((kw, i) => {
+              qb.andWhere(`job.title NOT ILIKE :skw_c_${i}`, {
+                [`skw_c_${i}`]: `%${kw}%`,
+              });
             });
           }
         }
@@ -351,12 +307,12 @@ export class JobsService {
       };
 
       const itCount = await buildBaseCountQuery()
-        .where(`${itSql} AND ${exSql}`)
+        .andWhere(`${itSql} AND ${exSql}`)
         .setParameters({ ...itParams, ...exParams })
         .getCount();
 
       const otherCount = await buildBaseCountQuery()
-        .where(`NOT (${itSql} AND ${exSql})`)
+        .andWhere(`NOT (${itSql} AND ${exSql})`)
         .setParameters({ ...itParams, ...exParams })
         .getCount();
 
@@ -364,7 +320,33 @@ export class JobsService {
         `Categorization: Total=${total}, IT=${itCount}, Other=${otherCount}`,
       );
 
-      return { jobs: adjustedJobs, total, itCount, otherCount };
+      // Update: Quotas are already fetched at the start of the method.
+
+      return {
+        jobs: adjustedJobs,
+        total,
+        itCount,
+        otherCount,
+        activeProvider,
+        quota: quota
+          ? {
+              remaining: quota.requestsRemaining,
+              resetAt: quota.requestsReset
+                ? quota.requestsReset < 100000000
+                  ? new Date(Date.now() + quota.requestsReset * 1000)
+                  : new Date(Number(quota.requestsReset) * 1000)
+                : null,
+            }
+          : null,
+        adzunaQuota: adzunaQuota
+          ? {
+              remaining: adzunaQuota.requestsRemaining,
+              resetAt: adzunaQuota.requestsReset
+                ? new Date(Number(adzunaQuota.requestsReset) * 1000)
+                : null,
+            }
+          : null,
+      };
     } catch (error) {
       this.logger.error('Error finding jobs:', error);
       return { jobs: [], total: 0, itCount: 0, otherCount: 0 };
@@ -428,6 +410,61 @@ export class JobsService {
     } catch (error) {
       this.logger.error('Error getting recent jobs:', error);
       return [];
+    }
+  }
+
+  /**
+   * Internal helper to fix missing experience data in job records on-the-fly.
+   * This maintains compatibility with the legacy "self-healing" behavior
+   * while isolating the logic for better readability.
+   */
+  private selfHealJobs(jobs: FilteredJob[], filters: JobFilters): void {
+    this.logger.debug(
+      `[DIAGNOSTICS] jobs initially fetched: ${jobs.length}. experienceMin filter: ${filters.experienceMin}`,
+    );
+
+    for (const job of jobs) {
+      if (
+        job.experienceRequiredMin === null ||
+        job.experienceRequiredMin === undefined ||
+        job.experienceRequiredMin === 0
+      ) {
+        const extracted = this.jobSyncService.extractExperienceFromDescription(
+          job.description || '',
+          job.title,
+        );
+
+        if (
+          extracted.min !== undefined &&
+          extracted.min !== job.experienceRequiredMin
+        ) {
+          this.logger.debug(
+            `[DIAGNOSTICS] Self-healing "${job.title}": Corrected ${job.experienceRequiredMin} -> ${extracted.min} years`,
+          );
+          job.experienceRequiredMin = extracted.min;
+          job.experienceRequiredMax = extracted.max;
+
+          // Asynchronous update to DB
+          // POST-FETCH FILTERING: If it no longer matches the user's filter, mark it for exclusion
+          if (
+            filters.experienceMin !== undefined &&
+            filters.experienceMin !== -1
+          ) {
+            if (extracted.min > filters.experienceMin) {
+              job._excludeFromResults = true;
+            }
+          }
+        }
+      } else {
+        if (
+          filters.experienceMin !== undefined &&
+          filters.experienceMin !== -1
+        ) {
+          if (job.experienceRequiredMin > filters.experienceMin) {
+            job._excludeFromResults = true;
+          }
+        }
+      }
     }
   }
 }

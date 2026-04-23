@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { extractErrorMessage } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ export function RegisterContainer() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
+        throw new Error(extractErrorMessage(errorData, "Registration failed"));
       }
 
       router.push("/login");

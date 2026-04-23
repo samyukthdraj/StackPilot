@@ -130,4 +130,16 @@
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
+
+  /* Compact custom scrollbar for dropdowns */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(245, 200, 66, 0.3);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }

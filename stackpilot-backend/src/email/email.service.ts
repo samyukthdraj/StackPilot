@@ -1,6 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import { OnEvent } from '@nestjs/event-emitter';
+import { DEFAULT_URLS } from '../common/constants';
+import { UserRegisteredEvent } from '../auth/events/user-registered.event';
+import { UserForgotPasswordEvent } from '../auth/events/user-forgot-password.event';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/user.entity';
 
 export interface JobEmailData {
   title: string;
@@ -22,22 +30,92 @@ export interface DailyDigestData {
   savedJobs: number;
 }
 
+import { JobMatchedEvent } from '../jobs/events/job-matched.event';
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  @OnEvent('user.registered')
+  handleUserRegisteredEvent(payload: UserRegisteredEvent) {
+    this.sendWelcomeEmail(payload.email, payload.name).catch((error) =>
+      this.logger.error(
+        `Failed to send welcome email to ${payload.email} from event:`,
+        error,
+      ),
+    );
+  }
+
+  @OnEvent('user.forgotPassword')
+  handleUserForgotPasswordEvent(payload: UserForgotPasswordEvent) {
+    this.sendResetPasswordEmail(payload.email, payload.name, payload.token).catch((error) =>
+      this.logger.error(
+        `Failed to send reset password email to ${payload.email} from event:`,
+        error,
+      ),
+    );
+  }
+
+  @OnEvent('job.matched')
+  async handleJobMatchedEvent(payload: JobMatchedEvent) {
+    try {
+      // Check for weekly rate limit
+      const user = await this.userRepository.findOne({
+        where: { id: payload.userId },
+        select: ['id', 'lastJobMatchEmailSentAt'],
+      });
+
+      if (user?.lastJobMatchEmailSentAt) {
+        const lastSent = new Date(user.lastJobMatchEmailSentAt);
+        const now = new Date();
+        const diffInDays =
+          (now.getTime() - lastSent.getTime()) / (1000 * 3600 * 24);
+
+        if (diffInDays < 7) {
+          this.logger.log(
+            `Skipping job match email for ${payload.email} - sent ${Math.round(diffInDays)} days ago`,
+          );
+          return;
+        }
+      }
+
+      await this.sendJobMatchesEmail(payload.email, payload.userName, [
+        payload.job,
+      ]);
+
+      // Update timestamp
+      await this.userRepository.update(payload.userId, {
+        lastJobMatchEmailSentAt: new Date(),
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle job matched event for ${payload.email}:`,
+        error,
+      );
+    }
+  }
 
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
     try {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        DEFAULT_URLS.FRONTEND_URL;
+
       const mailOptions: ISendMailOptions = {
         to: email,
         subject: 'Welcome to StackPilot!',
         template: 'welcome',
         context: {
           name,
-          loginUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`,
-          baseUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+          loginUrl: `${frontendUrl}/login`,
+          baseUrl: frontendUrl,
         },
       };
 
@@ -49,6 +127,33 @@ export class EmailService {
     }
   }
 
+  async sendResetPasswordEmail(email: string, name: string, token: string): Promise<void> {
+    try {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        DEFAULT_URLS.FRONTEND_URL;
+        
+      const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+      const mailOptions: ISendMailOptions = {
+        to: email,
+        subject: 'Reset Your StackPilot Password',
+        template: 'reset-password',
+        context: {
+          name,
+          resetUrl,
+          baseUrl: frontendUrl,
+        },
+      };
+
+      await this.mailerService.sendMail(mailOptions);
+      this.logger.log(`Reset password email sent to ${email}`);
+    } catch (error) {
+      this.logger.error('Error sending reset password email:', error);
+      throw error;
+    }
+  }
+
   async sendJobMatchesEmail(
     email: string,
     name: string,
@@ -56,15 +161,18 @@ export class EmailService {
   ): Promise<void> {
     try {
       const topMatches = matches.slice(0, 5);
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        DEFAULT_URLS.FRONTEND_URL;
 
       const mailOptions: ISendMailOptions = {
         to: email,
-        subject: `🎯 Top ${topMatches.length} Job Matches for You`,
+        subject: `Top ${topMatches.length} Job Matches for You`,
         template: 'job-matches',
         context: {
           name,
           matches: topMatches,
-          dashboardUrl: 'https://stackpilot.com/dashboard',
+          dashboardUrl: `${frontendUrl}/dashboard`,
         },
       };
 
@@ -81,16 +189,20 @@ export class EmailService {
     data: DailyDigestData,
   ): Promise<void> {
     try {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        DEFAULT_URLS.FRONTEND_URL;
+
       const mailOptions: ISendMailOptions = {
         to: email,
-        subject: '📊 Your StackPilot Daily Digest',
+        subject: 'Your StackPilot Daily Digest',
         template: 'daily-digest',
         context: {
           name,
           newJobs: data.newJobs,
           topMatches: data.topMatches.slice(0, 3),
           savedJobs: data.savedJobs,
-          dashboardUrl: 'https://stackpilot.com/dashboard',
+          dashboardUrl: `${frontendUrl}/dashboard`,
         },
       };
 
@@ -108,8 +220,12 @@ export class EmailService {
     message: string;
   }): Promise<void> {
     try {
+      const supportEmail =
+        this.configService.get<string>('SUPPORT_EMAIL') ||
+        DEFAULT_URLS.SUPPORT_EMAIL;
+
       const mailOptions: ISendMailOptions = {
-        to: process.env.SUPPORT_EMAIL || 'edusmart500@gmail.com', // fallback to user's main inbox conceptually
+        to: supportEmail,
         replyTo: data.email,
         subject: `New Contact Form Submission: ${data.subject}`,
         html: `

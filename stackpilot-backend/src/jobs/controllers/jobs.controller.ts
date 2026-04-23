@@ -15,7 +15,16 @@ import { ResumeService } from '../../resumes/services/resume.service';
 import { UserFromJwt } from '../../auth/user-id.decorator';
 import { Resume } from '../../resumes/entities/resume.entity';
 import { NotificationSchedulerService } from '../services/notification-scheduler.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
+@ApiTags('Jobs')
+@ApiBearerAuth()
 @Controller('jobs')
 @UseGuards(JwtAuthGuard)
 export class JobsController {
@@ -28,7 +37,39 @@ export class JobsController {
     private readonly notificationSchedulerService: NotificationSchedulerService,
   ) {}
 
+  @ApiTags('Jobs')
+  @ApiBearerAuth()
   @Get()
+  @ApiOperation({ summary: 'Get jobs with filtering and categorization' })
+  @ApiQuery({
+    name: 'country',
+    required: false,
+    description: 'Filter by country code (e.g., US, IN)',
+  })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter by job title',
+  })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Find jobs posted within last X days',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'General keyword search',
+  })
+  @ApiQuery({ name: 'salaryMin', required: false, type: Number })
+  @ApiQuery({ name: 'experienceMin', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number, default: 20 })
+  @ApiQuery({ name: 'offset', required: false, type: Number, default: 0 })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Returns filtered jobs, categorization counts, and API quota status',
+  })
   async getJobs(
     @User() user: UserFromJwt,
     @Query('country') country?: string,
@@ -63,7 +104,8 @@ export class JobsController {
     if (role) filters.title = role;
     if (days) {
       const daysAgo = new Date();
-      daysAgo.setDate(daysAgo.getDate() - parseInt(days, 10));
+      const daysValue = parseFloat(days);
+      daysAgo.setTime(daysAgo.getTime() - daysValue * 24 * 60 * 60 * 1000);
       filters.postedAt = daysAgo;
     }
     if (search) filters.search = search;
@@ -90,10 +132,11 @@ export class JobsController {
     if (limit) filters.limit = parseInt(limit, 10);
     if (offset) filters.offset = parseInt(offset, 10);
 
+    const result = await this.jobsService.findJobs(filters, user?.id);
     this.logger.debug(
-      `[CONTROLLER] getJobs called with query params: ${JSON.stringify(filters)}`,
+      `[DEBUG] findJobs activeProvider: ${result.activeProvider}`,
     );
-    return this.jobsService.findJobs(filters);
+    return result;
   }
 
   @Get('matches')
@@ -171,6 +214,9 @@ export class JobsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get job details by ID' })
+  @ApiResponse({ status: 200, description: 'Returns full job details' })
+  @ApiResponse({ status: 404, description: 'Job not found' })
   async getJob(@User() user: UserFromJwt, @Param('id') id: string) {
     return this.jobsService.findJobById(id);
   }

@@ -64,7 +64,7 @@ export function ActivityChart() {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={stats.activityData}
-              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+              margin={{ top: 60, right: 30, left: 0, bottom: 20 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -125,16 +125,21 @@ export function ActivityChart() {
               />
               <Legend 
                 verticalAlign="top" 
-                align="right" 
-                height={36} 
+                align="center" 
+                height={50} 
                 iconType="circle"
+                iconSize={8}
                 wrapperStyle={{ 
-                  paddingBottom: "20px",
-                  fontSize: "10px",
-                  fontWeight: "bold",
+                  top: -5,
+                  fontSize: "11px",
+                  fontWeight: "700",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
-                  color: "#888"
+                  color: "#888",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "20px"
                 }}
               />
               <Area

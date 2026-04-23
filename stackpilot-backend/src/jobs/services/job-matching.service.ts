@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job } from '../entities/job.entity';
 import { JobMatch } from '../entities/job-match.entity';
 import { Resume } from '../../resumes/entities/resume.entity';
@@ -8,6 +9,7 @@ import { JSearchService } from './jsearch.service';
 import { JobSyncService } from './job-sync.service';
 import { EmailService } from '../../email/email.service';
 import { User } from '../../users/user.entity';
+import { JobMatchedEvent } from '../events/job-matched.event';
 
 export interface MatchScore {
   jobId: string;
@@ -40,6 +42,7 @@ export class JobMatchingService {
     private jsearchService: JSearchService,
     private jobSyncService: JobSyncService,
     private emailService: EmailService,
+    private eventEmitter: EventEmitter2,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
@@ -419,23 +422,20 @@ export class JobMatchingService {
             where: { id: match.jobId },
           });
           if (job) {
-            void this.emailService.sendJobMatchesEmail(
-              user.email,
-              user.name || 'User',
-              [
-                {
-                  title: job.title,
-                  company: job.company,
-                  location: job.location,
-                  score: sanitizedScore,
-                  matchedSkills: match.matchedSkills,
-                  missingSkills: match.missingSkills,
-                  url: job.jobUrl || 'https://stackpilot.com/jobs',
-                },
-              ],
+            this.eventEmitter.emit(
+              'job.matched',
+              new JobMatchedEvent(userId, user.email, user.name || 'User', {
+                title: job.title,
+                company: job.company,
+                location: job.location,
+                score: sanitizedScore,
+                matchedSkills: match.matchedSkills,
+                missingSkills: match.missingSkills,
+                url: job.jobUrl || 'https://stackpilot.com/jobs',
+              }),
             );
             this.logger.log(
-              `Instant match alert triggered for user ${userId} for job ${job.id}`,
+              `Instant match alert emitted for user ${userId} for job ${job.id}`,
             );
           }
         }

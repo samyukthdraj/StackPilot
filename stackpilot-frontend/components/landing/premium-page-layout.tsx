@@ -3,6 +3,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { authUtil } from "@/lib/api/auth";
 import { PremiumWrapper } from "./premium-wrapper";
 import { PremiumNavbar } from "./premium-navbar";
 import { PremiumFooter } from "./premium-footer";
@@ -115,31 +117,24 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
     };
   }, []);
 
+  // Auto-prompt login on landing page if not authenticated
   useEffect(() => {
-    const token =
-      localStorage.getItem("access_token") || localStorage.getItem("token");
-    const loginTimestamp = localStorage.getItem("login_timestamp");
-
-    if (token && loginTimestamp) {
-      const now = Date.now();
-      const loginTime = parseInt(loginTimestamp, 10);
-      const SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
-
-      if (now - loginTime <= SESSION_TIMEOUT) {
-        // Only redirect if they are on an explicitly public page like /
-        // Wait, if they are on /pricing or /blog we may still let them read it.
-        // Actually, let's keep it consistent: we shouldn't force redirect from ALL pages.
-        // But for parity with old code, we'll keep it.
-        // For static pages, let's disable this auto-redirect so logged in users can read the blog, pricing, etc.
-        // So we do NOT redirect unconditionally here.
-      } else {
-        localStorage.removeItem("token");
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
-        localStorage.removeItem("login_timestamp");
-      }
+    if (pathname === "/" && !authUtil.isAuthenticated()) {
+      const timer = setTimeout(() => {
+        setShowLogin(true);
+      }, 1000); // 1 second delay for visual smoothness
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!authUtil.isAuthenticated()) {
+      authUtil.clearAuth();
+    } else {
+      // Redirect authenticated users away from public pages to dashboard
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const handleOAuth = (provider: string) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -159,21 +154,21 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Invalid credentials");
+        throw new Error(extractErrorMessage(errorData, "Invalid credentials"));
       }
 
-      const { access_token } = await response.json();
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("login_timestamp", Date.now().toString());
+      const jsonResponse = await response.json();
+      const access_token = jsonResponse.data?.access_token || jsonResponse.access_token;
+      authUtil.setToken(access_token);
 
       const profileResponse = await fetch(`${apiUrl}/auth/profile`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 
       if (profileResponse.ok) {
-        const userData = await profileResponse.json();
-        localStorage.setItem("user", JSON.stringify(userData));
+        const profileJson = await profileResponse.json();
+        const userData = profileJson.data || profileJson;
+        authUtil.setUser(userData);
       }
 
       router.push("/dashboard");
@@ -203,7 +198,7 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
+        throw new Error(extractErrorMessage(errorData, "Registration failed"));
       }
 
       setShowRegister(false);
@@ -221,17 +216,19 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
   };
 
   const triggerLogin = () => {
-    const token =
-      localStorage.getItem("token") || localStorage.getItem("access_token");
-    if (token) router.push("/dashboard");
-    else setShowLogin(true);
+    if (authUtil.isAuthenticated()) router.push("/dashboard");
+    else {
+      authUtil.clearAuth();
+      setShowLogin(true);
+    }
   };
 
   const triggerRegister = () => {
-    const token =
-      localStorage.getItem("token") || localStorage.getItem("access_token");
-    if (token) router.push("/dashboard");
-    else setShowRegister(true);
+    if (authUtil.isAuthenticated()) router.push("/dashboard");
+    else {
+      authUtil.clearAuth();
+      setShowRegister(true);
+    }
   };
 
   return (
@@ -252,7 +249,7 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
             <div className="modal-glow modal-glow-2" />
           </div>
           <div
-            className="w-full max-w-md"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto"
             style={{ cursor: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -297,13 +294,14 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
                       <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         Google
                       </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
-                        onClick={() => handleOAuth("google")}
-                        type="button"
-                      >
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                          onClick={() => handleOAuth("google")}
+                          type="button"
+                          aria-label="Sign in with Google"
+                        >
                         <FaGoogle className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
                       </Button>
                     </div>
@@ -311,13 +309,14 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
                       <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         GitHub
                       </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
-                        onClick={() => handleOAuth("github")}
-                        type="button"
-                      >
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                          onClick={() => handleOAuth("github")}
+                          type="button"
+                          aria-label="Sign in with GitHub"
+                        >
                         <FaGithub className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
                       </Button>
                     </div>
@@ -325,13 +324,14 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
                       <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         Microsoft
                       </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
-                        onClick={() => handleOAuth("microsoft")}
-                        type="button"
-                      >
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="w-full h-12 bg-white/3 border-[#2a2a2a] hover:border-[#f5c842] hover:bg-white/8 transition-all duration-300 group"
+                          onClick={() => handleOAuth("microsoft")}
+                          type="button"
+                          aria-label="Sign in with Microsoft"
+                        >
                         <FaMicrosoft className="h-5 w-5 text-gray-400 group-hover:text-[#f5c842] transition-colors" />
                       </Button>
                     </div>
@@ -647,10 +647,10 @@ export function PremiumPageLayout({ children }: PremiumPageLayoutProps) {
       {/* Main Content Rendered within Navbar and Footer bounds */}
       <main className="flex-1 w-full flex flex-col relative">
           {pathname !== "/" && (
-            <div className="absolute top-24 left-4 md:left-12 z-50">
+            <div className="relative md:absolute top-0 md:top-24 left-0 md:left-12 z-50 px-4 pt-16 pb-2 md:pt-0 md:pb-0 md:px-0">
               <Link
                 href="/"
-                className="flex items-center text-sm font-medium text-gray-400 hover:text-[#f5c842] transition-colors bg-[#111]/80 px-4 py-2 rounded-full border border-white/10 backdrop-blur"
+                className="flex items-center text-sm font-medium text-gray-400 hover:text-[#f5c842] transition-colors bg-[#111]/80 px-4 py-2 rounded-full border border-white/10 backdrop-blur w-fit"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

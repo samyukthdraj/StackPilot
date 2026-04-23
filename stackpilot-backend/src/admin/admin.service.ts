@@ -8,15 +8,15 @@ import { JobSyncService } from '../jobs/services/job-sync.service';
 import { IAdminService } from './interfaces/admin-service.interface';
 import { UsageAction } from '../usage/entities/usage-log.entity';
 
-// Define local types
-type DashboardStats = {
+// Define public result interfaces for Controller alignment
+export interface DashboardStats {
   users: { total: number; activeToday: number };
   jobs: { total: number; addedToday: number };
   usage: { totalScans: number; totalMatches: number };
   timestamp: Date;
-};
+}
 
-type UserListResponse = {
+export interface UserListResponse {
   users: Array<{
     id: string;
     email: string;
@@ -27,9 +27,9 @@ type UserListResponse = {
   total: number;
   page: number;
   totalPages: number;
-};
+}
 
-type UserDetailsResponse = {
+export interface UserDetailsResponse {
   user: {
     id: string;
     email: string;
@@ -38,15 +38,15 @@ type UserDetailsResponse = {
     resumes: number;
   };
   usage: UsageLog[];
-};
+}
 
-type UsageStatsResponse = Array<{ date: string; count: number }>;
+export type UsageStatsResponse = Array<{ date: string; count: number }>;
 
-type JobStatsResponse = {
+export interface JobStatsResponse {
   total: number;
   byCountry: Record<string, number>;
   recent: { count: number; days: number };
-};
+}
 
 interface UsageStatsResult {
   date: string;

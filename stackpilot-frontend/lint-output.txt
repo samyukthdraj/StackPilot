@@ -1,0 +1,13 @@
+
+> stackpilot-frontend@0.1.0 lint
+> eslint
+
+
+C:\Users\SamyukthDharmarajan\Downloads\StackPilot\stackpilot-frontend\app\about\page.tsx
+  3:28  warning  'Twitter' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\SamyukthDharmarajan\Downloads\StackPilot\stackpilot-frontend\lib\utils.ts
+  8:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 2 problems (1 error, 1 warning)
+

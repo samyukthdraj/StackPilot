@@ -7,7 +7,7 @@ import { AxiosRequestConfig, AxiosResponse } from 'axios';
 export class HttpWrapperService {
   constructor(private readonly httpService: HttpService) {}
 
-  async get<T = any>(
+  async get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
@@ -15,25 +15,25 @@ export class HttpWrapperService {
     return await firstValueFrom(observable);
   }
 
-  async post<T = any>(
+  async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     const observable = this.httpService.post<T>(url, data, config);
     return await firstValueFrom(observable);
   }
 
-  async put<T = any>(
+  async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     const observable = this.httpService.put<T>(url, data, config);
     return await firstValueFrom(observable);
   }
 
-  async delete<T = any>(
+  async delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
@@ -41,9 +41,9 @@ export class HttpWrapperService {
     return await firstValueFrom(observable);
   }
 
-  async patch<T = any>(
+  async patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     const observable = this.httpService.patch<T>(url, data, config);

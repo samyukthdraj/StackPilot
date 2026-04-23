@@ -1,11 +1,11 @@
 "use client";
 import { PremiumPageLayout } from "@/components/landing/premium-page-layout";
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin } from "lucide-react";
 
 export default function AboutPage() {
   return (
     <PremiumPageLayout>
-      <section className="pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto relative z-10 text-white">
+      <section className="pt-4 md:pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto relative z-10 text-white">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-[#f5f0e8]">
             About StackPilot

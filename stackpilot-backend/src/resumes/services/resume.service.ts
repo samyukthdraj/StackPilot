@@ -14,6 +14,13 @@ import { UpdateResumeDto } from '../dto/update-resume.dto';
 import { ResumeParserService } from './resume-parser.service';
 import { ATSScoringService } from './ats-scoring.service';
 import { MulterFile } from '../../types/multer-file.interface';
+import { UsageService } from '../../usage/services/usage.service';
+import { UsageAction } from '../../usage/entities/usage-log.entity';
+import { SYSTEM_LIMITS } from '../../common/constants';
+
+interface PDFTextItem {
+  str?: string;
+}
 
 @Injectable()
 export class ResumeService {
@@ -26,6 +33,7 @@ export class ResumeService {
     private userRepository: Repository<User>,
     private resumeParserService: ResumeParserService,
     private atsScoringService: ATSScoringService,
+    private usageService: UsageService,
   ) {}
 
   async uploadResume(
@@ -40,10 +48,19 @@ export class ResumeService {
         throw new NotFoundException('User not found');
       }
 
-      if (user.subscriptionType === 'free' && user.dailyResumeScans >= 99) {
-        throw new ForbiddenException(
-          'Daily resume scan limit reached (99 per day)',
-        );
+      if (
+        user.subscriptionType === 'free' &&
+        (user.dailyResumeScans || 0) >= SYSTEM_LIMITS.DAILY_RESUME_SCANS
+      ) {
+        const nextReset = new Date();
+        nextReset.setHours(24, 0, 0, 0); // Midnight tomorrow
+
+        throw new ForbiddenException({
+          message: `Daily resume scan limit reached (${SYSTEM_LIMITS.DAILY_RESUME_SCANS} per day).`,
+          resetAt: nextReset.toISOString(),
+          error: 'Forbidden',
+          statusCode: 403,
+        });
       }
 
       // Validate file
@@ -80,7 +97,7 @@ export class ResumeService {
         for (let i = 1; i <= numPages; i++) {
           const page = await pdfDocument.getPage(i);
           const textContent = await page.getTextContent();
-          const items = textContent.items as Array<{ str?: string }>;
+          const items = textContent.items as PDFTextItem[];
           const pageText = items.map((item) => item.str ?? '').join(' ');
           pageTexts.push(pageText);
         }
@@ -149,6 +166,11 @@ export class ResumeService {
       });
 
       const savedResume = await this.resumeRepository.save(resume);
+
+      // Log usage
+      await this.usageService.trackUsage(userId, UsageAction.RESUME_SCAN, {
+        resumeId: savedResume.id,
+      });
 
       // Update user's daily scan count
       const today = new Date().toDateString();

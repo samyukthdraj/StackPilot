@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MatchFilters } from "@/components/matches/match-filters";
-import { MatchesHeader } from "@/components/matches/matches-header";
 import { MatchesList } from "@/components/matches/matches-list";
 import { NoResumeState } from "@/components/matches/no-resume-state";
 import { useMatches } from "@/lib/hooks/use-matches";
@@ -13,6 +12,7 @@ import { apiClient } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Job, SavedJob } from "@/lib/types/api";
+import { SlidersHorizontal, X } from "lucide-react";
 
 export function MatchesContainer() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export function MatchesContainer() {
   const { filters } = useMatchesStore();
 
   const [internalSelectedResume, setInternalSelectedResume] = useState<string | null>(null);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Derived selected resume: priority order -> query param, manually selected, primary resume
   const currentResumeId = resumeIdParam || internalSelectedResume || primaryResume?.id || undefined;
@@ -30,12 +31,10 @@ export function MatchesContainer() {
   const [jobDetails, setJobDetails] = useState<Record<string, Job>>({});
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"explore" | "saved">("explore");
-  const [showFilters, setShowFilters] = useState(false);
 
   const fetchJobDetails = useCallback(async () => {
     if (!matches) return;
 
-    // Only fetch details for jobs we haven't fetched yet
     const jobsToFetch = matches.filter((match) => !jobDetails[match.jobId]);
     if (jobsToFetch.length === 0) return;
 
@@ -84,14 +83,13 @@ export function MatchesContainer() {
 
   const filteredMatches = matches?.filter((match) => {
     if (viewMode === "saved" && !savedJobs.has(match.jobId)) return false;
-    if (match.score <= 60) return false; // Only show high-quality matches (> 60%)
+    if (match.score <= 60) return false;
     if (match.score < filters.minScore) return false;
     if (match.score > filters.maxScore) return false;
     return true;
   });
 
   const sortedMatches = filteredMatches?.sort((a, b) => {
-    // If user says desc shows asc, then we flip our logic to match their expectation
     const multiplier = filters.sortOrder === "asc" ? -1 : 1;
 
     switch (filters.sortBy) {
@@ -149,47 +147,59 @@ export function MatchesContainer() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <MatchesHeader
-          showFilters={showFilters}
-          onFiltersChange={setShowFilters}
-          filtersComponent={
-            <MatchFilters 
-              className="border-0 shadow-none" 
-              resumes={resumes}
-              selectedResume={currentResumeId || null}
-              onResumeChange={setInternalSelectedResume}
-            />
-          }
-        />
-        <div className="flex bg-[#1a1a1a] rounded-xl p-1 border border-[#2a2a2a] shrink-0 self-start mt-2">
+    <div className="space-y-6">
+      {/* Header row: title + view toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            AI Job Matches
+          </h1>
+          <p className="text-sm text-[#a0a0a0] mt-1">Personalized matches based on your resume</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Mobile filter toggle */}
           <Button
             variant="ghost"
-            onClick={() => setViewMode("explore")}
-            className={`px-6 py-2 rounded-lg transition-all duration-300 text-xs uppercase tracking-widest font-bold ${
-              viewMode === "explore"
-                ? "bg-[#f5c842] text-[#0d0d0d] shadow-[0_0_15px_rgba(245,200,66,0.2)]"
-                : "text-[#a0a0a0] hover:text-[#f5f0e8] hover:bg-white/5"
-            }`}
+            onClick={() => setMobileFiltersOpen(true)}
+            className="lg:hidden flex items-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#f5c842]/50 text-[#f5f0e8] rounded-xl px-4 py-2"
           >
-            Top Matches
+            <SlidersHorizontal className="w-4 h-4 text-[#f5c842]" />
+            <span className="text-xs font-bold uppercase tracking-widest">Filters</span>
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setViewMode("saved")}
-            className={`px-6 py-2 rounded-lg transition-all duration-300 text-xs uppercase tracking-widest font-bold ${
-              viewMode === "saved"
-                ? "bg-[#f5c842] text-[#0d0d0d] shadow-[0_0_15px_rgba(245,200,66,0.2)]"
-                : "text-[#a0a0a0] hover:text-[#f5f0e8] hover:bg-white/5"
-            }`}
-          >
-            Saved Matches
-          </Button>
+
+          {/* View mode toggle */}
+          <div className="flex bg-[#1a1a1a] rounded-xl p-1 border border-[#2a2a2a] shrink-0">
+            <Button
+              variant="ghost"
+              onClick={() => setViewMode("explore")}
+              className={`px-4 sm:px-6 py-2 rounded-lg transition-all duration-300 text-xs uppercase tracking-widest font-bold ${
+                viewMode === "explore"
+                  ? "bg-[#f5c842] text-[#0d0d0d] shadow-[0_0_15px_rgba(245,200,66,0.2)]"
+                  : "text-[#a0a0a0] hover:text-[#f5f0e8] hover:bg-white/5"
+              }`}
+            >
+              Top
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setViewMode("saved")}
+              className={`px-4 sm:px-6 py-2 rounded-lg transition-all duration-300 text-xs uppercase tracking-widest font-bold ${
+                viewMode === "saved"
+                  ? "bg-[#f5c842] text-[#0d0d0d] shadow-[0_0_15px_rgba(245,200,66,0.2)]"
+                  : "text-[#a0a0a0] hover:text-[#f5f0e8] hover:bg-white/5"
+              }`}
+            >
+              Saved
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-8">
+
+
+      {/* Main layout: sidebar filters + list */}
+      <div className="grid lg:grid-cols-4 gap-6">
+        {/* Desktop Sidebar Filters */}
         <div className="hidden lg:block">
           <MatchFilters 
             resumes={resumes}
@@ -207,6 +217,39 @@ export function MatchesContainer() {
           resumeId={currentResumeId}
         />
       </div>
+
+      {/* Mobile Filter Drawer */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-[#0d0d0d] border-l border-[#2a2a2a] overflow-y-auto flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-[#2a2a2a] sticky top-0 bg-[#0d0d0d] z-10">
+              <h3 className="text-[#f5f0e8] font-bold text-lg">Filters</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="text-[#a0a0a0] hover:text-[#f5f0e8] hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="flex-1 p-4">
+              <MatchFilters 
+                className="border-0 shadow-none bg-transparent"
+                resumes={resumes}
+                selectedResume={currentResumeId || null}
+                onResumeChange={(id) => { setInternalSelectedResume(id); setMobileFiltersOpen(false); }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,10 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
 import { EmailService } from './email.service';
 
@@ -27,7 +33,10 @@ export class EmailController {
   @Post()
   async sendContactMessage(@Body() body: ContactDto) {
     if (!body.name || !body.email || !body.message) {
-      throw new HttpException('Missing required fields', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Missing required fields',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     await this.emailService.sendContactEmail(body);
     return { success: true, message: 'Message sent successfully' };

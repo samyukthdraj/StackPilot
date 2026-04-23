@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExperienceItem, ProjectItem, EducationItem } from "@/lib/types/api";
+import { ScrollableTabs } from "@/components/ui/scrollable-tabs";
 
 interface ResumeDetailsTabsProps {
   skills?: string[];
@@ -49,12 +50,14 @@ export function ResumeDetailsTabs({
 }: ResumeDetailsTabsProps) {
   return (
     <Tabs defaultValue="skills" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="skills">Skills</TabsTrigger>
-        <TabsTrigger value="experience">Experience</TabsTrigger>
-        <TabsTrigger value="projects">Projects</TabsTrigger>
-        <TabsTrigger value="education">Education</TabsTrigger>
-      </TabsList>
+      <ScrollableTabs>
+        <TabsList className="flex min-w-full w-max sm:w-auto">
+          <TabsTrigger value="skills" className="flex-shrink-0">Skills</TabsTrigger>
+          <TabsTrigger value="experience" className="flex-shrink-0">Experience</TabsTrigger>
+          <TabsTrigger value="projects" className="flex-shrink-0">Projects</TabsTrigger>
+          <TabsTrigger value="education" className="flex-shrink-0">Education</TabsTrigger>
+        </TabsList>
+      </ScrollableTabs>
 
       <TabsContent value="skills" className="space-y-4">
         {skills && skills.length > 0 ? (

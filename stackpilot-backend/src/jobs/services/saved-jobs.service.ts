@@ -10,6 +10,7 @@ import { SavedJob } from '../entities/saved-job.entity';
 import { Job } from '../entities/job.entity';
 import { JobMatch } from '../entities/job-match.entity';
 import { SaveJobDto, UpdateSavedJobDto } from '../dto/save-job.dto';
+import { SYSTEM_LIMITS } from '../../common/constants';
 
 @Injectable()
 export class SavedJobsService {
@@ -45,15 +46,15 @@ export class SavedJobsService {
         throw new BadRequestException('Job already saved');
       }
 
-      // Check free tier limits (max 10 saved jobs for free users)
+      // Check free tier limits (max X saved jobs for free users)
       const savedCount = await this.savedJobRepository.count({
         where: { userId },
       });
 
       // TODO: Check user subscription type from a service
-      if (savedCount >= 10) {
+      if (savedCount >= SYSTEM_LIMITS.FREE_TIER_SAVED_JOBS) {
         throw new BadRequestException(
-          'Free tier limit reached (max 10 saved jobs). Please upgrade to save more.',
+          `Free tier limit reached (max ${SYSTEM_LIMITS.FREE_TIER_SAVED_JOBS} saved jobs). Please upgrade to save more.`,
         );
       }
 

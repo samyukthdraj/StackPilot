@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { apiClient } from "@/lib/api/client";
 import { toast } from "@/components/ui/use-toast";
+import { TruncatedText } from "@/components/shared/truncated-text";
 
 interface JobCardProps {
   job: Job;
@@ -89,9 +90,10 @@ export function JobCard({
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-navy group-hover:text-orange-500 transition-colors">
-                {job.title}
-              </h3>
+              <TruncatedText 
+                text={job.title} 
+                className="text-lg font-semibold text-navy group-hover:text-orange-500 transition-colors" 
+              />
               <p className="text-gray-600 mt-1">{job.company}</p>
             </div>
 
@@ -151,7 +153,7 @@ export function JobCard({
                   color="#64748B"
                   state="morph"
                 />
-                <span className="truncate">{job.location}</span>
+                <TruncatedText text={job.location || ""} className="flex-1" />
               </div>
             )}
 

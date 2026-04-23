@@ -1,11 +1,13 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollableTabs } from "@/components/ui/scrollable-tabs";
 import { StatsCards } from "@/components/profile/stats-cards";
 import { ActivityChart } from "@/components/profile/activity-chart";
 import { ChangePasswordForm } from "@/components/profile/change-password-form";
 import { NotificationPreferences } from "@/components/profile/notification-preferences";
 import { DangerZone } from "@/components/profile/danger-zone";
+import { ProfileUsageStats } from "@/components/profile/profile-usage-stats";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { User } from "@/lib/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,10 +34,10 @@ export function ProfileContainer() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-[#f5f0e8] font-playfair">Profile</h1>
-        <p className="text-[#a0a0a0] mt-2 text-lg">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#f5f0e8] font-playfair">Profile</h1>
+        <p className="text-[#a0a0a0] mt-2 text-base sm:text-lg">
           Manage your account settings and preferences
         </p>
       </div>
@@ -54,13 +56,13 @@ export function ProfileContainer() {
           </div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 text-[#f5f0e8] shadow-lg">
-          <div className="flex items-start gap-8">
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5 sm:p-8 shadow-lg">
+          <div className="flex flex-col sm:flex-row items-start gap-5 sm:gap-8">
             <div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-[0_0_25px_rgba(245,200,66,0.15)] transition-transform duration-500 hover:scale-105"
+              className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center shadow-[0_0_25px_rgba(245,200,66,0.15)] transition-transform duration-500 hover:scale-105 shrink-0"
               style={{ backgroundColor: "#f5c842", color: "#0d0d0d" }}
             >
-              <span className="text-4xl font-bold font-playfair">
+              <span className="text-3xl sm:text-4xl font-bold font-playfair">
                 {user?.name
                   ? user.name.charAt(0).toUpperCase()
                   : user?.email?.charAt(0).toUpperCase()}
@@ -71,11 +73,11 @@ export function ProfileContainer() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   {isEditingName ? (
-                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Input
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        className="h-12 w-80 bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] text-3xl font-playfair font-bold px-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-700"
+                        className="h-10 w-full sm:w-80 bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] text-xl sm:text-3xl font-playfair font-bold px-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-700"
                         placeholder="Type your name..."
                         autoFocus
                         onKeyDown={(e) => {
@@ -110,7 +112,7 @@ export function ProfileContainer() {
                     <div className="flex items-center justify-between w-full">
                       <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                          <h2 className="text-3xl font-bold font-playfair tracking-tight text-[#f5f0e8]">
+                          <h2 className="text-xl sm:text-3xl font-bold font-playfair tracking-tight text-[#f5f0e8] break-all">
                             {user?.name || user?.email}
                           </h2>
                           <button
@@ -122,7 +124,7 @@ export function ProfileContainer() {
                           </button>
                         </div>
                         {user?.name && (
-                          <p className="text-gray-400 font-medium text-lg">
+                          <p className="text-gray-400 font-medium text-sm sm:text-lg break-all">
                             {user?.email}
                           </p>
                         )}
@@ -132,7 +134,7 @@ export function ProfileContainer() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="px-4 py-1.5 bg-[#0d0d0d] border border-[#f5c842]/30 text-[#f5c842] rounded-full text-xs font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(245,200,66,0.1)]">
                   {(user as User)?.subscriptionType || "Free"} Plan Active
                 </span>
@@ -146,15 +148,18 @@ export function ProfileContainer() {
       )}
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="danger">Danger Zone</TabsTrigger>
-        </TabsList>
+        <ScrollableTabs>
+          <TabsList className="flex min-w-full w-max sm:w-auto">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm flex-shrink-0">Overview</TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm flex-shrink-0">Security</TabsTrigger>
+            <TabsTrigger value="notifications" className="text-xs sm:text-sm flex-shrink-0">Notifications</TabsTrigger>
+            <TabsTrigger value="danger" className="text-xs sm:text-sm flex-shrink-0">Danger Zone</TabsTrigger>
+          </TabsList>
+        </ScrollableTabs>
 
         <TabsContent value="overview" className="space-y-6">
           <StatsCards />
+          <ProfileUsageStats />
           <ActivityChart />
         </TabsContent>
 

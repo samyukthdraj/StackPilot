@@ -22,6 +22,7 @@ import { apiClient } from "@/lib/api/client";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { JobStructuredData } from "./job-structured-data";
 import { 
   MapPin, 
   Globe, 
@@ -153,7 +154,7 @@ export function JobDetailContainer() {
           The job you&apos;re looking for doesn&apos;t exist or has expired.
         </p>
         <Link href="/jobs">
-          <Button className="mt-6 bg-orange-500 hover:bg-orange-600">
+          <Button className="mt-6 bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none">
             Browse Jobs
           </Button>
         </Link>
@@ -162,26 +163,28 @@ export function JobDetailContainer() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href="/jobs"
-            className="text-[#f5c842] hover:text-[#d4a832] inline-flex items-center gap-2 mb-4 font-medium"
-          >
-            <LordiconWrapper
-              icon={animations.arrow}
-              size={18}
-              color="#f5c842"
-              state="hover"
-            />
-            Back to Jobs
-          </Link>
-          <h1 className="text-3xl font-bold text-[#f5f0e8] font-playfair">{job.title}</h1>
-          <p className="text-xl text-[#a0a0a0] mt-2">{job.company}</p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+    <div className="space-y-6">
+      <JobStructuredData job={job} />
+      {/* Back + Title + Actions */}
+      <div className="flex flex-col gap-4">
+        <Link
+          href="/jobs"
+          className="text-[#f5c842] hover:text-[#d4a832] inline-flex items-center gap-2 font-medium w-fit"
+        >
+          <LordiconWrapper
+            icon={animations.arrow}
+            size={18}
+            color="#f5c842"
+            state="hover"
+          />
+          Back to Jobs
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#f5f0e8] font-playfair">{job.title}</h1>
+            <p className="text-lg text-[#a0a0a0] mt-1">{job.company}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:shrink-0">
           <Button
             variant="outline"
             onClick={handleSave}
@@ -212,6 +215,7 @@ export function JobDetailContainer() {
               Apply Now
             </Button>
           )}
+          </div>
         </div>
       </div>
 
@@ -325,7 +329,7 @@ export function JobDetailContainer() {
             </CardHeader>
 
             <CardContent>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Row 1: Location & Country */}
                 {job.location && (
                   <div className="flex items-center gap-3">

@@ -3,19 +3,12 @@
 import { useSyncExternalStore, useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@/lib/types/api";
-
-const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+import { authUtil } from "@/lib/api/auth";
 
 // Storage event listeners for cross-tab sync
 const authListeners = new Set<() => void>();
 
-// Cache for snapshot to prevent infinite loops
-let cachedSnapshot: { user: User | null; isAuthenticated: boolean } | null =
-  null;
-let lastCheckTime = 0;
-
 function emitAuthChange() {
-  cachedSnapshot = null; // Invalidate cache
   authListeners.forEach((listener) => listener());
 }
 
@@ -25,7 +18,6 @@ function subscribeToAuth(callback: () => void) {
   // Listen for storage events from other tabs
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === "token" || e.key === "access_token" || e.key === "user") {
-      cachedSnapshot = null; // Invalidate cache
       callback();
     }
   };
@@ -38,57 +30,28 @@ function subscribeToAuth(callback: () => void) {
   };
 }
 
+let currentSnapshot: { user: User | null; isAuthenticated: boolean } | null = null;
+
 function getAuthSnapshot(): { user: User | null; isAuthenticated: boolean } {
-  if (typeof window === "undefined") {
-    return { user: null, isAuthenticated: false };
+  const user = authUtil.getUser();
+  const isAuthenticated = authUtil.isAuthenticated() && !!user;
+
+  // Check if we already have a snapshot with the same values
+  if (
+    currentSnapshot &&
+    currentSnapshot.isAuthenticated === isAuthenticated &&
+    JSON.stringify(currentSnapshot.user) === JSON.stringify(user)
+  ) {
+    return currentSnapshot;
   }
 
-  // Return cached snapshot if available and recent (within 100ms)
-  const now = Date.now();
-  if (cachedSnapshot && now - lastCheckTime < 100) {
-    return cachedSnapshot;
-  }
+  // Create and cache new snapshot if changed
+  currentSnapshot = {
+    user,
+    isAuthenticated,
+  };
 
-  const token =
-    localStorage.getItem("token") || localStorage.getItem("access_token");
-  const userStr = localStorage.getItem("user");
-  const loginTimestamp = localStorage.getItem("login_timestamp");
-
-  if (!token || !userStr || !loginTimestamp) {
-    cachedSnapshot = { user: null, isAuthenticated: false };
-    lastCheckTime = now;
-    return cachedSnapshot;
-  }
-
-  const loginTime = parseInt(loginTimestamp, 10);
-
-  // Check if session has expired
-  if (now - loginTime > SESSION_TIMEOUT) {
-    // Clean up expired session
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("login_timestamp");
-    cachedSnapshot = { user: null, isAuthenticated: false };
-    lastCheckTime = now;
-    return cachedSnapshot;
-  }
-
-  try {
-    const user = JSON.parse(userStr);
-    cachedSnapshot = { user, isAuthenticated: true };
-    lastCheckTime = now;
-    return cachedSnapshot;
-  } catch {
-    // Clean up corrupted data
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("login_timestamp");
-    cachedSnapshot = { user: null, isAuthenticated: false };
-    lastCheckTime = now;
-    return cachedSnapshot;
-  }
+  return currentSnapshot;
 }
 
 const serverSnapshot = { user: null, isAuthenticated: false };
@@ -114,23 +77,15 @@ export function useAuth() {
   );
 
   const logout = useCallback(() => {
-    if (typeof window === "undefined") return;
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("login_timestamp");
-
+    authUtil.clearAuth();
     emitAuthChange();
     router.push("/");
   }, [router]);
 
   const requireAuth = useCallback(() => {
     if (typeof window === "undefined") return false;
-    const token =
-      localStorage.getItem("token") || localStorage.getItem("access_token");
-    return !!token && authState.isAuthenticated;
-  }, [authState.isAuthenticated]);
+    return authUtil.isAuthenticated();
+  }, []);
 
   return {
     user: authState.user,

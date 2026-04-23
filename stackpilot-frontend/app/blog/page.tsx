@@ -12,7 +12,7 @@ export default function BlogPage() {
 
   return (
     <PremiumPageLayout>
-      <section className="pt-32 pb-20 px-4 md:px-8 max-w-6xl mx-auto relative z-10 text-white">
+      <section className="pt-4 md:pt-32 pb-20 px-4 md:px-8 max-w-6xl mx-auto relative z-10 text-white">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#f5f0e8]">Open Source Log</h1>
           <p className="text-gray-400 text-lg">Insights on open source engineering, career scale, and the StackPilot journey.</p>

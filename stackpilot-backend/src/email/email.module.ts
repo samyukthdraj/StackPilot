@@ -4,6 +4,8 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailService } from './email.service';
 import { join } from 'path';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../users/user.entity';
 
 import { EmailController } from './email.controller';
 
@@ -24,14 +26,23 @@ import { EmailController } from './email.controller';
 
         const port = parseInt(portStr, 10);
 
-        const transport: Record<string, any> = {
+        interface EmailTransport {
+          host: string;
+          port: number;
+          secure: boolean;
+          tls: { rejectUnauthorized: boolean };
+          pool: boolean;
+          auth?: { user: string; pass: string };
+        }
+
+        const transport: EmailTransport = {
           host,
           port,
-          secure: port === 465, // Use true for 465, false for other ports
+          secure: port === 465,
           tls: {
-            rejectUnauthorized: false, // Helps with local development certificate issues
+            rejectUnauthorized: false,
           },
-          pool: true, // Reuse SMTP connections
+          pool: true,
         };
 
         if (user && pass) {
@@ -53,6 +64,7 @@ import { EmailController } from './email.controller';
         };
       },
     }),
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [EmailController],
   providers: [EmailService],

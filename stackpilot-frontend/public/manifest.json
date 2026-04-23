@@ -1,0 +1,16 @@
+{
+  "name": "StackPilot - Career Intelligence",
+  "short_name": "StackPilot",
+  "description": "Optimize your resume and find perfect job matches.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#f5c842",
+  "icons": [
+    {
+      "src": "/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

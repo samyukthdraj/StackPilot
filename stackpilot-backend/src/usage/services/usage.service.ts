@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { UsageLog, UsageAction } from '../entities/usage-log.entity';
+import { JSearchQuota } from '../entities/jsearch-quota.entity';
+import { AdzunaQuota } from '../entities/adzuna-quota.entity';
 import { IUsageService } from '../interfaces/usage-service.interface';
+import { SYSTEM_LIMITS } from '../../common/constants';
 
 export interface UsageMetadata {
   resumeId?: string;
@@ -19,12 +22,16 @@ export class UsageService implements IUsageService {
   constructor(
     @InjectRepository(UsageLog)
     private usageRepository: Repository<UsageLog>,
+    @InjectRepository(JSearchQuota)
+    private quotaRepository: Repository<JSearchQuota>,
+    @InjectRepository(AdzunaQuota)
+    private adzunaQuotaRepository: Repository<AdzunaQuota>,
   ) {}
 
   async trackUsage(
     userId: string,
     action: UsageAction,
-    metadata?: Record<string, unknown>,
+    metadata?: UsageMetadata,
   ): Promise<void> {
     try {
       const usage = this.usageRepository.create({
@@ -75,8 +82,19 @@ export class UsageService implements IUsageService {
   }
 
   async getUsageSummary(userId: string): Promise<{
-    resumeScans: { used: number; limit: number };
-    jobSearches: { used: number; limit: number };
+    resumeScans: { used: number; limit: number; resetAt: Date };
+    jobSearches: { used: number; limit: number; resetAt: Date };
+    globalJSearch: {
+      used: number;
+      limit: number;
+      remaining: number;
+      resetAt: Date | null;
+    } | null;
+    adzunaQuota: {
+      remaining: number;
+      limit: number;
+      resetAt: Date | null;
+    } | null;
     remaining: {
       resumeScans: number;
       jobSearches: number;
@@ -87,23 +105,58 @@ export class UsageService implements IUsageService {
       this.getCurrentUsage(userId, UsageAction.JOB_SEARCH, 'day'),
     ]);
 
-    const FREE_TIER_LIMITS = {
-      resumeScans: 3,
-      jobSearches: 5,
-    };
+    const nextReset = new Date();
+    nextReset.setHours(24, 0, 0, 0); // Next midnight
+
+    const quota = await this.quotaRepository.findOne({
+      where: { id: 'singleton' },
+    });
+
+    const adzunaRow = await this.adzunaQuotaRepository.findOne({
+      where: { id: 'singleton' },
+    });
 
     return {
       resumeScans: {
         used: resumeScans,
-        limit: FREE_TIER_LIMITS.resumeScans,
+        limit: SYSTEM_LIMITS.DAILY_RESUME_SCANS,
+        resetAt: nextReset,
       },
       jobSearches: {
         used: jobSearches,
-        limit: FREE_TIER_LIMITS.jobSearches,
+        limit: SYSTEM_LIMITS.DAILY_RESUME_SCANS, // Using same daily limit config
+        resetAt: nextReset,
       },
+      globalJSearch: quota
+        ? {
+            used: quota.requestsUsed,
+            limit: quota.requestsLimit,
+            remaining: Math.max(0, quota.requestsRemaining),
+            resetAt: quota.requestsReset
+              ? quota.requestsReset < 100000000
+                ? new Date(Date.now() + quota.requestsReset * 1000)
+                : new Date(quota.requestsReset * 1000)
+              : null,
+          }
+        : null,
+      adzunaQuota: adzunaRow
+        ? {
+            remaining: Math.max(0, adzunaRow.requestsRemaining),
+            limit: adzunaRow.requestsLimit,
+            resetAt: adzunaRow.requestsReset
+              ? new Date(Number(adzunaRow.requestsReset) * 1000)
+              : null,
+          }
+        : null,
       remaining: {
-        resumeScans: Math.max(0, FREE_TIER_LIMITS.resumeScans - resumeScans),
-        jobSearches: Math.max(0, FREE_TIER_LIMITS.jobSearches - jobSearches),
+        resumeScans: Math.max(
+          0,
+          SYSTEM_LIMITS.DAILY_RESUME_SCANS - resumeScans,
+        ),
+        jobSearches: Math.max(
+          0,
+          SYSTEM_LIMITS.DAILY_RESUME_SCANS - jobSearches,
+        ),
       },
     };
   }

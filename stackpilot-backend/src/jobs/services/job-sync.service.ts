@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { Job } from '../entities/job.entity';
-import { JSearchService, JSearchJob } from './jsearch.service';
+import { JSearchService } from './jsearch.service';
+import { AdzunaService } from './adzuna.service';
+import { ArbeitnowService } from './arbeitnow.service';
+import { ExternalJob } from '../interfaces/external-job.interface';
+import { JSearchQuota } from '../../usage/entities/jsearch-quota.entity';
+import { AdzunaQuota } from '../../usage/entities/adzuna-quota.entity';
 
 @Injectable()
 export class JobSyncService {
@@ -13,40 +18,33 @@ export class JobSyncService {
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
     private jsearchService: JSearchService,
+    private adzunaService: AdzunaService,
+    private arbeitnowService: ArbeitnowService,
+    @InjectRepository(JSearchQuota)
+    private jsearchQuotaRepository: Repository<JSearchQuota>,
+    @InjectRepository(AdzunaQuota)
+    private adzunaQuotaRepository: Repository<AdzunaQuota>,
   ) {}
 
-  @Cron(CronExpression.EVERY_6_HOURS)
+  @Cron('0 0 * * *')
   async syncJobs() {
-    this.logger.log('Starting job sync via JSearch...');
+    this.logger.log('Starting daily job sync across countries...');
+    const countries = ['us', 'in', 'ae', 'gb'];
 
-    try {
-      // Sync jobs for strategic tech hubs
-      const countries = ['us', 'in', 'ae', 'gb', 'ca'];
-
-      for (const country of countries) {
+    for (const country of countries) {
+      try {
         await this.syncJobsForCountry(country);
+      } catch (error) {
+        this.logger.error(`Failed to sync jobs for ${country}:`, error);
       }
-
-      await this.cleanupOldJobs();
-      this.logger.log('Job sync completed successfully');
-    } catch (error) {
-      this.logger.error('Error during job sync:', error);
     }
   }
 
-  private async syncJobsForCountry(country: string) {
+  public async syncJobsForCountry(country: string) {
     try {
-      // Perform a broad search for software roles in the target country
-      const jobs = await this.jsearchService.searchJobs(
-        'Software Engineer',
-        country,
-      );
-
-      for (const jSearchJob of jobs) {
-        await this.saveJob(jSearchJob, country);
-      }
-
-      this.logger.log(`Synced ${jobs.length} jobs for ${country} via JSearch`);
+      this.logger.log(`Syncing jobs for ${country}...`);
+      await this.fetchAndSaveJobs('Software Engineer', country);
+      this.logger.log(`Sync complete for ${country}`);
     } catch (error) {
       this.logger.error(`Error syncing jobs for ${country}:`, error);
     }
@@ -101,7 +99,7 @@ export class JobSyncService {
 
     // Strategy 5: Broad contextual search (Number + Years within 50 chars of "experience")
     const broadRegex = /\b(\d+)\b\s*(?:years|yrs|year|yr)\b/gi;
-    let m;
+    let m: RegExpExecArray | null;
     while ((m = broadRegex.exec(cleanDesc)) !== null) {
       const val = parseInt(m[1], 10);
       const start = Math.max(0, m.index - 70);
@@ -149,72 +147,143 @@ export class JobSyncService {
     return { min: undefined, max: undefined };
   }
 
-  public async saveJob(jSearchJob: JSearchJob, country: string) {
+  /**
+   * Central fallback mechanism to fetch jobs from multiple providers
+   * and save them to the database.
+   */
+  public async fetchAndSaveJobs(
+    query: string,
+    country: string,
+  ): Promise<string> {
     try {
-      // 1. Try native JSearch metadata first (Highest precision)
-      let minExp: number | undefined;
-
-      const jExp = jSearchJob.job_required_experience;
-      if (jExp?.no_experience_required) {
-        minExp = 0;
-      } else if (jExp?.required_experience_in_months) {
-        minExp = Math.round(jExp.required_experience_in_months / 12);
-      }
-
-      // 2. Fallback to extracting from description/highlights (Regex & Heuristics)
-      const qualifications =
-        jSearchJob.job_highlights?.Qualifications?.join('\n') || '';
-      const combinedText = `${jSearchJob.job_description}\n${qualifications}`;
-
-      const extracted = this.extractExperienceFromDescription(
-        combinedText,
-        jSearchJob.job_title,
+      this.logger.log(
+        `Attempting multi-provider fetch for: ${query} in ${country}`,
       );
 
-      // Merge: Native data takes priority over extracted regex data
-      minExp = minExp ?? extracted.min;
-      const maxExp = extracted.max;
+      // Chain 1: JSearch (Primary)
+      try {
+        const quota = await this.jsearchQuotaRepository.findOne({
+          where: { id: 'singleton' },
+        });
+        if (quota && quota.requestsRemaining <= 0) {
+          throw new Error('Pre-flight: JSearch quota exhausted');
+        }
+
+        const jSearchJobs = await this.jsearchService.searchJobs(
+          query,
+          country,
+        );
+        if (jSearchJobs.length > 0) {
+          this.logger.log(`Found ${jSearchJobs.length} jobs via JSearch`);
+          await this.saveExternalJobs(jSearchJobs, country);
+        }
+        return 'jsearch'; // Return jsearch if quota was OK, even if 0 results
+      } catch (err) {
+        this.logger.warn(
+          `JSearch skipped/failed: ${err instanceof Error ? err.message : 'Unknown error'}. Trying Adzuna...`,
+        );
+      }
+
+      // Chain 2: Adzuna (Secondary)
+      try {
+        const quota = await this.adzunaQuotaRepository.findOne({
+          where: { id: 'singleton' },
+        });
+        if (quota && quota.requestsRemaining <= 0) {
+          throw new Error('Pre-flight: Adzuna quota exhausted');
+        }
+
+        const adzunaJobs = await this.adzunaService.searchJobs(query, country);
+        if (adzunaJobs.length > 0) {
+          this.logger.log(`Found ${adzunaJobs.length} jobs via Adzuna`);
+          await this.saveExternalJobs(adzunaJobs, country);
+        }
+        return 'adzuna'; // Return adzuna if JSearch failed, even if 0 results
+      } catch (err) {
+        this.logger.warn(
+          `Adzuna skipped/failed: ${err instanceof Error ? err.message : 'Unknown error'}. Trying Arbeitnow...`,
+        );
+      }
+
+      // Chain 3: Arbeitnow (Last Resort)
+      try {
+        const arbeitnowJobs = await this.arbeitnowService.searchJobs(query);
+        if (arbeitnowJobs.length > 0) {
+          this.logger.log(`Found ${arbeitnowJobs.length} jobs via Arbeitnow`);
+          await this.saveExternalJobs(arbeitnowJobs, country);
+        }
+        return 'arbeitnow';
+      } catch (err) {
+        this.logger.error('Arbeitnow fallback also failed', err);
+      }
+
+      return 'none';
+    } catch (error) {
+      this.logger.error('Global external search logic failed:', error);
+      return 'error';
+    }
+  }
+
+  private async saveExternalJobs(
+    externalJobs: ExternalJob[],
+    country: string,
+  ): Promise<void> {
+    this.logger.log(`Saving ${externalJobs.length} jobs to database...`);
+    await Promise.all(
+      externalJobs.map((job) => this.saveJob(job, country)),
+    ).catch((err) => this.logger.error('Error in background job saving:', err));
+  }
+
+  public async saveJob(externalJob: ExternalJob, country: string) {
+    try {
+      // 1. Try to extract experience if not provided (use internal logic)
+      let minExp = externalJob.experienceMin;
+      let maxExp = externalJob.experienceMax;
+
+      if (minExp === undefined) {
+        const extracted = this.extractExperienceFromDescription(
+          externalJob.description,
+          externalJob.title,
+        );
+        minExp = extracted.min;
+        maxExp = extracted.max;
+      }
 
       if (minExp !== undefined) {
-        this.logger.log(
-          `Verified Experience for "${jSearchJob.job_title}": ${minExp} years`,
+        this.logger.debug(
+          `Verified Experience for "${externalJob.title}": ${minExp} years`,
         );
       }
 
       const existingJob = await this.jobRepository.findOne({
         where: {
-          sourceId: jSearchJob.job_id,
-          source: 'jsearch',
+          sourceId: externalJob.sourceId,
+          source: externalJob.source,
         },
       });
 
-      const skills = this.extractSkillsFromDescription(
-        jSearchJob.job_description,
-      );
+      const skills = this.extractSkillsFromDescription(externalJob.description);
 
       const jobData = {
-        title: jSearchJob.job_title,
-        company: jSearchJob.employer_name,
-        description: jSearchJob.job_description,
+        title: externalJob.title,
+        company: externalJob.company,
+        description: externalJob.description,
         requiredSkills: skills,
-        location: `${jSearchJob.job_city || 'Remote'}, ${jSearchJob.job_country}`,
-        country,
-        salaryMin: jSearchJob.job_min_salary || 0,
-        salaryMax: jSearchJob.job_max_salary || 0,
-        salaryCurrency: 'USD',
-        jobType: jSearchJob.job_employment_type?.toLowerCase() || 'full_time',
+        location: externalJob.location,
+        country: country || externalJob.country || 'us',
+        salaryMin: externalJob.salaryMin || 0,
+        salaryMax: externalJob.salaryMax || 0,
+        salaryCurrency: externalJob.salaryCurrency || 'USD',
+        jobType: externalJob.jobType || 'full_time',
         experienceRequiredMin: minExp,
         experienceRequiredMax: maxExp,
-        source: 'jsearch',
-        sourceId: jSearchJob.job_id,
-        jobUrl: jSearchJob.job_apply_link,
-        postedAt: jSearchJob.job_posted_at_datetime_utc
-          ? new Date(jSearchJob.job_posted_at_datetime_utc)
-          : new Date(),
+        source: externalJob.source,
+        sourceId: externalJob.sourceId,
+        jobUrl: externalJob.url,
+        postedAt: externalJob.postedAt || new Date(),
       };
 
       if (existingJob) {
-        // Use save() instead of update() to ensure TypeORM properly handles the entity state and triggers
         const updatedJob = { ...existingJob, ...jobData };
         await this.jobRepository.save(updatedJob);
       } else {
@@ -277,8 +346,9 @@ export class JobSyncService {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Run a manual query to delete old jobs ONLY if they are not saved or matched by users.
-    // This prevents cascading deletes from wiping out user data.
+    // Strict deletion of jobs older than 30 days,
+    // but excluding those that are still needed for user history (saved/matched)
+    // to avoid foreign key constraint errors.
     await this.jobRepository.query(
       `
       DELETE FROM jobs

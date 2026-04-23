@@ -35,7 +35,8 @@ function OAuthCallbackContent() {
         });
 
         if (profileResponse.ok) {
-          const userData = await profileResponse.json();
+          const profileJson = await profileResponse.json();
+          const userData = profileJson.data || profileJson;
           localStorage.setItem("user", JSON.stringify(userData));
           router.push("/dashboard");
         } else {

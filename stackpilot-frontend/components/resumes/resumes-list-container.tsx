@@ -19,6 +19,7 @@ import { animations } from "@/public/icons/lordicon";
 import { apiClient } from "@/lib/api/client";
 import { Resume } from "@/lib/types/api";
 import Link from "next/link";
+import { TruncatedText } from "@/components/shared/truncated-text";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -119,14 +120,14 @@ export function ResumesListContainer() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: "#f5f0e8", fontFamily: "'Playfair Display', serif" }}>Your Resumes</h1>
-          <p className="mt-2" style={{ color: "#a0a0a0" }}>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "#f5f0e8", fontFamily: "'Playfair Display', serif" }}>Your Resumes</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base" style={{ color: "#a0a0a0" }}>
             Manage and track all your uploaded resumes
           </p>
         </div>
-        <Link href="/resumes/upload">
+        <Link href="/resumes/upload" className="self-start sm:self-auto">
           <Button className="bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none">
             Upload Resume
           </Button>
@@ -142,7 +143,7 @@ export function ResumesListContainer() {
           actionHref="/resumes/upload"
         />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {resumes.map((resume) => (
             <Card key={resume.id} className="flex flex-col bg-[#1a1a1a] border-[#2a2a2a] hover:border-[#f5c842]/30 transition-all duration-300 group">
               <CardHeader className="pb-4">
@@ -154,12 +155,10 @@ export function ResumesListContainer() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <CardTitle 
-                        className="text-lg font-playfair text-[#f5f0e8] truncate" 
-                        title={resume.fileName}
-                      >
-                        {resume.fileName}
-                      </CardTitle>
+                      <TruncatedText 
+                        text={resume.fileName} 
+                        className="text-lg font-playfair text-[#f5f0e8] w-full" 
+                      />
                       <CardDescription className="text-[#64748b] text-xs">
                         {formatDistanceToNow(new Date(resume.createdAt))} ago
                       </CardDescription>
@@ -232,10 +231,10 @@ export function ResumesListContainer() {
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-4 border-t border-[#2a2a2a] flex gap-2 items-center bg-[#0d0d0d]/30">
+              <CardFooter className="pt-4 border-t border-[#2a2a2a] flex gap-2 items-center bg-[#0d0d0d]/30 px-3 sm:px-6">
                 <Button
                   variant="outline"
-                  className="flex-1 h-9 text-xs bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8] hover:bg-[#2a2a2a] hover:text-[#f5c842] transition-all"
+                  className="flex-1 h-9 text-[10px] sm:text-xs bg-[#1a1a1a] border-[#2a2a2a] text-[#f5f0e8] hover:bg-[#2a2a2a] hover:text-[#f5c842] transition-all whitespace-nowrap px-1 sm:px-4"
                   onClick={() => router.push(`/resumes/${resume.id}`)}
                 >
                   View Detail
@@ -244,14 +243,14 @@ export function ResumesListContainer() {
                 {!resume.isPrimary ? (
                   <Button
                     variant="outline"
-                    className="flex-1 h-9 text-xs bg-[#f5c842] border-none text-[#0d0d0d] font-bold hover:bg-[#d4a832] transition-all"
+                    className="flex-1 h-9 text-[10px] sm:text-xs bg-[#f5c842] border-none text-[#0d0d0d] font-bold hover:bg-[#d4a832] transition-all whitespace-nowrap px-1 sm:px-4"
                     onClick={() => handleSetPrimary(resume.id)}
                   >
                     Set Primary
                   </Button>
                 ) : (
-                  <div className="flex-1 h-9 rounded-md bg-[#0d0d0d]/50 border border-[#2a2a2a]/50 flex items-center justify-center text-[10px] text-[#444] uppercase font-bold tracking-widest">
-                    ACTIVE SOURCE
+                  <div className="flex-1 h-9 rounded-md bg-[#0d0d0d]/50 border border-[#2a2a2a]/50 flex items-center justify-center text-[9px] sm:text-[10px] text-[#444] uppercase font-bold tracking-wider whitespace-nowrap overflow-hidden px-1">
+                    Active Source
                   </div>
                 )}
                 

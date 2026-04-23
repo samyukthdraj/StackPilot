@@ -24,10 +24,10 @@ interface JobFiltersStore {
 }
 
 const defaultFilters: JobFilters = {
-  country: "us",
+  country: "in",
   role: "",
-  days: 7,
-  search: "",
+  days: 30,
+  search: "software engineer",
   jobType: [],
   salaryMin: 0,
   salaryMax: 200000,
@@ -60,11 +60,11 @@ export const useJobFiltersStore = create<JobFiltersStore>()(
         const { filters } = get();
         return (
           filters.role !== "" ||
-          filters.search !== "" ||
+          filters.search !== "software engineer" ||
           filters.jobType.length > 0 ||
           filters.remote ||
-          filters.country !== "us" ||
-          filters.days !== 7 ||
+          filters.country !== "in" ||
+          filters.days !== 30 ||
           filters.salaryMin !== 0 ||
           filters.salaryMax !== 200000 ||
           filters.experienceMin !== -1 ||
@@ -76,31 +76,39 @@ export const useJobFiltersStore = create<JobFiltersStore>()(
     }),
     {
       name: "job-filters-storage",
-      version: 3,
+      version: 6,
       migrate: (persistedState: unknown, version: number) => {
-        if (version < 3 && persistedState && typeof persistedState === 'object') {
-          const state = persistedState as { state?: { filters?: Record<string, unknown> } };
-          // Zustand persist wraps the state in a 'state' key
-          if (state.state && state.state.filters) {
-            const filters = state.state.filters;
-            // Migrating old string values to arrays (v0 -> v1)
-            if (typeof filters.filterLocation === "string") {
-              filters.filterLocation = 
-                filters.filterLocation === "all" ? [] : [filters.filterLocation];
+        const state = persistedState as { 
+          state?: { 
+            filters?: JobFilters 
+          } 
+        };
+        
+        if (state?.state?.filters) {
+          const filters = state.state.filters;
+          
+          if (version < 4) {
+            // Reset days to 0 (all time) since old default of 7 filtered out all db jobs
+            filters.days = 0;
+          }
+
+          if (version < 6) {
+            // Force apply new defaults for India market and 30 day window
+            // We check for the old defaults (us/7) or missing values
+            if (filters.country === "us" || !filters.country) {
+              filters.country = "in";
             }
-            if (typeof filters.filterCompany === "string") {
-              filters.filterCompany = 
-                filters.filterCompany === "all" ? [] : [filters.filterCompany];
+            if (filters.days === 7 || filters.days === 0 || !filters.days) {
+              filters.days = 30;
             }
-            // Inject new experience defaults
-            if (filters.experienceMin === undefined) {
-              filters.experienceMin = 0;
-            }
-            if (filters.experienceMax === undefined) {
-              filters.experienceMax = 15;
+            
+            // Ensure experience is set to "Any" if not present
+            if (filters.experienceMin === undefined || filters.experienceMin === null) {
+              filters.experienceMin = -1;
             }
           }
         }
+        
         return persistedState as JobFiltersStore;
       },
     },

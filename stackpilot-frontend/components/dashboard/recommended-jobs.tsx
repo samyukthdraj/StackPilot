@@ -191,7 +191,7 @@ export function RecommendedJobs({ resumeId }: RecommendedJobsProps) {
                       )}
                       <div className="flex items-center gap-2 text-sm text-[#f5c842]">
                          <LordiconWrapper 
-                            icon="https://cdn.lordicon.com/pbbsmkxz.json" // Medal/Star
+                            icon={animations.match} 
                             size={14} 
                             color="#f5c842" 
                             state="hover"
@@ -211,7 +211,7 @@ export function RecommendedJobs({ resumeId }: RecommendedJobsProps) {
                     <Link href={`/jobs/${job.id}`}>
                       <Button 
                         variant="outline" 
-                        className="w-full border transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        className="w-full border transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
                         style={{ 
                           backgroundColor: "#f5c842", 
                           borderColor: "#f5c842", 

@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { UserId } from '../../auth/user-id.decorator';
 import { UploadResumeDto } from '../dto/upload-resume.dto';
 import { UpdateResumeDto } from '../dto/update-resume.dto';
+import { Resume } from '../entities/resume.entity';
 import { ResumeResponseDto } from '../dto/resume-response.dto';
 import { MulterFile } from '../../types/multer-file.interface';
 import { UsageLimit } from '../../usage/decorators/usage-limit.decorator';
@@ -50,7 +51,9 @@ export class ResumeController {
   @Get()
   async getUserResumes(@UserId() userId: string): Promise<ResumeResponseDto[]> {
     const resumes = await this.resumeService.getUserResumes(userId);
-    return resumes.map((resume) => ResumeResponseDto.fromEntity(resume));
+    return resumes.map((resume: Resume) =>
+      ResumeResponseDto.fromEntity(resume),
+    );
   }
 
   @Get('primary')

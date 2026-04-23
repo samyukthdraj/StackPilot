@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 interface PremiumNavbarProps {
@@ -13,6 +13,7 @@ export function PremiumNavbar({
   onRegisterClick,
 }: PremiumNavbarProps) {
   const navbarRef = useRef<HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const initNavbar = () => {
@@ -20,36 +21,27 @@ export function PremiumNavbar({
       const ScrollTrigger = window.ScrollTrigger;
       if (!gsap || !ScrollTrigger || !navbarRef.current) return;
 
-      // Get all sections
-      const sections = gsap.utils.toArray("section");
-
-      sections.forEach((section: unknown) => {
-        const sectionElement = section as HTMLElement;
-        const bgColor = window.getComputedStyle(sectionElement).backgroundColor;
-        const isLightSection = isLightBackground(bgColor);
+      const sections = gsap.utils.toArray("section") as HTMLElement[];
+      sections.forEach((section) => {
+        const isLightSection = isLightBackground(
+          window.getComputedStyle(section).backgroundColor,
+        );
 
         ScrollTrigger.create({
-          trigger: sectionElement,
+          trigger: section,
           start: "top 80px",
           end: "bottom 80px",
           onEnter: () => {
-            if (isLightSection) {
-              navbarRef.current?.classList.add("scrolled");
-            } else {
-              navbarRef.current?.classList.remove("scrolled");
-            }
+            if (isLightSection) navbarRef.current?.classList.add("scrolled");
+            else navbarRef.current?.classList.remove("scrolled");
           },
           onEnterBack: () => {
-            if (isLightSection) {
-              navbarRef.current?.classList.add("scrolled");
-            } else {
-              navbarRef.current?.classList.remove("scrolled");
-            }
+            if (isLightSection) navbarRef.current?.classList.add("scrolled");
+            else navbarRef.current?.classList.remove("scrolled");
           },
         });
       });
 
-      // Magnetic effect on buttons
       const magneticBtns = document.querySelectorAll(".magnetic-btn");
       magneticBtns.forEach((btn) => {
         btn.addEventListener("mousemove", (e: Event) => {
@@ -57,7 +49,6 @@ export function PremiumNavbar({
           const rect = (btn as HTMLElement).getBoundingClientRect();
           const x = mouseEvent.clientX - rect.left - rect.width / 2;
           const y = mouseEvent.clientY - rect.top - rect.height / 2;
-
           gsap.to(btn, {
             x: x * 0.3,
             y: y * 0.3,
@@ -65,7 +56,6 @@ export function PremiumNavbar({
             ease: "power2.out",
           });
         });
-
         btn.addEventListener("mouseleave", () => {
           gsap.to(btn, {
             x: 0,
@@ -81,10 +71,7 @@ export function PremiumNavbar({
       const rgb = color.match(/\d+/g);
       if (!rgb || rgb.length < 3) return false;
       const brightness =
-        (parseInt(rgb[0]) * 299 +
-          parseInt(rgb[1]) * 587 +
-          parseInt(rgb[2]) * 114) /
-        1000;
+        (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
       return brightness > 128;
     };
 
@@ -98,6 +85,23 @@ export function PremiumNavbar({
     return () => clearInterval(checkGSAP);
   }, []);
 
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const handleFeaturesClick = (e: React.MouseEvent) => {
     if (window.location.pathname === "/") {
       e.preventDefault();
@@ -106,36 +110,61 @@ export function PremiumNavbar({
         featuresSection.scrollIntoView({ behavior: "smooth" });
       }
     }
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setMobileMenuOpen(false);
   };
 
   return (
-    <nav ref={navbarRef} className="premium-navbar">
-      <Link 
-        href="/" 
-        className="premium-logo flex items-center" 
-        style={{ cursor: "pointer", textDecoration: "none" }}
-        onClick={(e) => {
-          if (window.location.pathname === "/") {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-        }}
+    <nav ref={navbarRef} className={`premium-navbar${mobileMenuOpen ? " menu-open" : ""}`}>
+      <Link
+        href="/"
+        className="premium-logo flex items-center"
+        style={{ cursor: "pointer", textDecoration: "none", zIndex: 1100, position: "relative" }}
+        onClick={handleLogoClick}
       >
         StackPilot
       </Link>
-      <div className="premium-nav-links">
-        <Link href="/#features" onClick={handleFeaturesClick}>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        className={`premium-nav-hamburger${mobileMenuOpen ? " open" : ""}`}
+        onClick={() => setMobileMenuOpen((v) => !v)}
+        aria-label="Toggle navigation menu"
+        aria-expanded={mobileMenuOpen}
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+
+      <div className={`premium-nav-links${mobileMenuOpen ? " open" : ""}`}>
+        <Link href="/#features" className="premium-nav-features hidden md:block" onClick={handleFeaturesClick}>
           Features
         </Link>
         <button
-          onClick={onRegisterClick}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            onRegisterClick();
+          }}
           className="premium-btn-pill premium-btn-outline magnetic-btn ml-4"
+          aria-label="Create a new account"
         >
           Get Started
         </button>
         <button
-          onClick={onLoginClick}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            onLoginClick();
+          }}
           className="premium-btn-pill premium-btn-light magnetic-btn"
+          aria-label="Login to your account"
         >
           Login
         </button>

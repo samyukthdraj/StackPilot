@@ -92,7 +92,7 @@ export function ChangePasswordForm() {
     }[user.authProvider as keyof typeof providerNames] || "#f5c842";
 
     return (
-      <Card className="border-[#f5c842]/20 bg-linear-to-br from-[#1a1a1a] to-[#0d0d0d] overflow-hidden group">
+      <Card className="border-[#f5c842]/20 bg-linear-to-br from-[#1a1a1a] to-[#0d0d0d] overflow-hidden relative group">
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
           <ProviderIcon size={160} />
         </div>

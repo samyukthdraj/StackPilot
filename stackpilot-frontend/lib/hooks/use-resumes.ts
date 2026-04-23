@@ -48,6 +48,8 @@ export function useCreateResume() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
+      queryClient.invalidateQueries({ queryKey: ["profile-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["usage", "summary"] });
     },
   });
 }
@@ -58,6 +60,18 @@ export function useDeleteResume() {
   return useMutation({
     mutationFn: async (id: string) => {
       await apiClient.delete(`/resumes/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
+    },
+  });
+}
+export function useUpdatePrimaryResume() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.post(`/resumes/${id}/set-primary`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resumes"] });

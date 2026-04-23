@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { GeminiService } from '../../common/ai/gemini.service';
 import { StructuredResumeData } from '../entities/resume.entity';
 
 @Injectable()
 export class ResumeParserService {
   private readonly logger = new Logger(ResumeParserService.name);
+
+  constructor(private geminiService: GeminiService) {}
 
   async parseResume(
     base64Data: string,
@@ -72,51 +75,23 @@ Rules:
 - Return raw JSON only. No markdown, no backtick fences, no preamble.`;
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment');
-
-      // Using Flash-Lite: 15 RPM, 1000 RPD — best free throughput
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
-                  {
-                    inlineData: {
-                      mimeType: mimeType,
-                      data: base64Data,
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1, // low temp = consistent structured JSON output
-              maxOutputTokens: 4096,
-              responseMimeType: 'application/json',
+      const clean = await this.geminiService.generateContent(
+        [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Data,
             },
-          }),
+          },
+        ],
+        {
+          temperature: 0.1,
+          maxOutputTokens: 4096,
+          responseMimeType: 'application/json',
         },
       );
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Gemini API error ${response.status}: ${errText}`);
-      }
-
-      const data = (await response.json()) as {
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-      };
-      const rawJson: string =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-      // With application/json, it shouldn't contain fences, but clean just in case
-      const clean = rawJson.replace(/```(?:json)?\n?|```/g, '').trim();
       let parsed: StructuredResumeData;
       try {
         parsed = JSON.parse(clean) as StructuredResumeData;

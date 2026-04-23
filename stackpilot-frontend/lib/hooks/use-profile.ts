@@ -1,22 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "./use-auth";
+import { authUtil } from "@/lib/api/auth";
 import { toast } from "@/components/ui/use-toast";
 import { AxiosError } from "axios"; // Added for better error typing
-
-interface ProfileStats {
-  totalResumes: number;
-  totalScans: number;
-  savedMatches: number;
-  savedJobs: number;
-  totalApplied: number;
-  successRate: number;
-  remainingScans: number;
-  activityData: Array<{
-    date: string;
-    scans: number;
-  }>;
-}
 
 interface ChangePasswordData {
   currentPassword: string;
@@ -70,10 +57,36 @@ export function useProfileStats() {
         totalApplied: applied,
         successRate,
         remainingScans: usage.data.resumeScans.remaining,
+        scanLimit: usage.data.resumeScans.limit,
         activityData: activityChart.data,
-      } as unknown as ProfileStats;
+      };
     },
     enabled: isAuthenticated,
+  });
+}
+
+export interface JSearchQuotaData {
+  limit: number;
+  remaining: number;
+  used: number;
+  usedPercent: number;
+  resetInDays: number | null;
+  resetDate: string | null;
+  lastCallAt: string | null;
+  status: "ok" | "low" | "critical" | "exhausted";
+}
+
+export function useJSearchQuota() {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["jsearch-quota"],
+    queryFn: async () => {
+      const response = await apiClient.get<JSearchQuotaData>("/usage/jsearch-quota");
+      return response.data;
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000, // refresh every 5 mins
   });
 }
 
@@ -189,12 +202,11 @@ export function useUpdateName() {
       return response.data;
     },
     onSuccess: (data) => {
-      // Update local storage user object
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        const user = JSON.parse(userStr);
+      // Update local storage user object using authUtil
+      const user = authUtil.getUser();
+      if (user) {
         user.name = data.name;
-        localStorage.setItem("user", JSON.stringify(user));
+        authUtil.setUser(user);
 
         // Trigger auth sync across components
         window.dispatchEvent(new Event("storage"));

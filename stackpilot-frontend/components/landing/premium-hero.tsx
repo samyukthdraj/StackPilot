@@ -11,45 +11,64 @@ export function PremiumHero({ onGetStarted, onWatchDemo }: PremiumHeroProps) {
   const headlineRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    const initAnimations = () => {
-      const gsap = window.gsap;
-      if (!gsap || !headlineRef.current) return;
+    const initAnimation = () => {
+      if (!window.gsap || !headlineRef.current) return;
+      
+      const ctx = window.gsap.context(() => {
+        const gsap = window.gsap;
+        const headline = headlineRef.current!;
+        const text = headline.textContent || "";
+        const words = text.split(" ");
 
-      const headline = headlineRef.current;
-      const text = headline.textContent || "";
-      const words = text.split(" ");
+        const fragment = document.createDocumentFragment();
+        words.forEach((word) => {
+          const span = document.createElement("span");
+          span.className = "word";
+          span.innerHTML = `<span style="will-change: transform, clip-path">${word}</span>`;
+          fragment.appendChild(span);
+          fragment.appendChild(document.createTextNode(" "));
+        });
+        
+        headline.innerHTML = "";
+        headline.appendChild(fragment);
 
-      headline.innerHTML = words
-        .map((word) => `<span class="word"><span>${word}</span></span>`)
-        .join(" ");
+        const wordSpans = headline.querySelectorAll(".word span");
 
-      const wordSpans = headline.querySelectorAll(".word span");
-
-      gsap.fromTo(
-        wordSpans,
-        {
-          y: 100,
-          clipPath: "inset(0 0 100% 0)",
-        },
-        {
-          y: 0,
-          clipPath: "inset(0 0 0% 0)",
-          duration: 1.2,
-          stagger: 0.08,
-          ease: "power4.out",
-          delay: 0.3,
-        },
-      );
+        gsap.fromTo(
+          wordSpans,
+          { y: 40, clipPath: "inset(0 0 100% 0)", opacity: 0 },
+          {
+            y: 0,
+            clipPath: "inset(0 0 0% 0)",
+            opacity: 1,
+            duration: 1,
+            stagger: 0.05,
+            ease: "power4.out",
+            delay: 0.2,
+          },
+        );
+      });
+      return ctx;
     };
 
-    const checkGSAP = setInterval(() => {
-      if (window.gsap) {
-        clearInterval(checkGSAP);
-        setTimeout(initAnimations, 100);
-      }
-    }, 100);
+    let animationContext: { revert: () => void } | null = null;
+    
+    const init = () => {
+      animationContext = initAnimation() as { revert: () => void };
+    };
 
-    return () => clearInterval(checkGSAP);
+    if (document.readyState === "complete") {
+      init();
+    } else {
+      window.addEventListener("load", init);
+    }
+
+    return () => {
+      window.removeEventListener("load", init);
+      if (animationContext) {
+        animationContext.revert();
+      }
+    };
   }, []);
 
   return (
@@ -68,6 +87,7 @@ export function PremiumHero({ onGetStarted, onWatchDemo }: PremiumHeroProps) {
           <button
             onClick={onGetStarted}
             className="premium-btn-pill premium-btn-light magnetic-btn"
+            aria-label="Start your free trial with StackPilot"
           >
             Start Free Trial
           </button>
@@ -75,13 +95,14 @@ export function PremiumHero({ onGetStarted, onWatchDemo }: PremiumHeroProps) {
             onClick={onWatchDemo}
             className="premium-btn-pill premium-btn-dark magnetic-btn"
             style={{ border: "2px solid var(--color-light)" }}
+            aria-label="Watch a demo of StackPilot features"
           >
             Watch Demo
           </button>
         </div>
       </div>
 
-      <div className="interactive-orb">
+      <div className="interactive-orb" aria-hidden="true">
         <div className="orb-inner">
           <div className="orb-pulse"></div>
         </div>

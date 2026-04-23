@@ -12,7 +12,7 @@ export default function FAQPage() {
 
   return (
     <PremiumPageLayout>
-      <section className="pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto relative z-10 text-white flex flex-col items-center">
+      <section className="pt-4 md:pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto relative z-10 text-white flex flex-col items-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-12 text-center text-[#f5f0e8]">Frequently Asked Questions</h1>
         <div className="w-full space-y-6">
           {faqs.map((faq, i) => (

@@ -75,4 +75,17 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({
+    name: 'last_job_match_email_sent_at',
+    type: 'timestamp',
+    nullable: true,
+  })
+  lastJobMatchEmailSentAt?: Date;
+
+  @Column({ name: 'reset_password_token', nullable: true })
+  resetPasswordToken?: string;
+
+  @Column({ name: 'reset_password_expires', type: 'timestamp', nullable: true })
+  resetPasswordExpires?: Date;
 }

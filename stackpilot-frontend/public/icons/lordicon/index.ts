@@ -3,15 +3,15 @@
  * Using verified stable CDN URLs from the official Lordicon library.
  */
 export const animations = {
-  loading: "https://cdn.lordicon.com/xjovfocc.json",
-  upload: "https://cdn.lordicon.com/nocovpqy.json",
+  loading: "https://cdn.lordicon.com/kbtmbyzy.json",
+  upload: "https://cdn.lordicon.com/puvaffet.json", // Box upload alternate
   resume: "https://cdn.lordicon.com/puvaffet.json",
   chart: "https://cdn.lordicon.com/fevbeonq.json",
   match: "https://cdn.lordicon.com/msoeawqm.json", // Magnifying glass
   search: "https://cdn.lordicon.com/msoeawqm.json",
   empty: "https://cdn.lordicon.com/msetmbee.json",
   notFound: "https://cdn.lordicon.com/hrqwmuhr.json",
-  check: "https://cdn.lordicon.com/ihfatunv.json",
+  check: "https://cdn.lordicon.com/lupuorrc.json", // Success checkmark alternate
   close: "https://cdn.lordicon.com/nhfyvjkh.json",
   heart: "https://cdn.lordicon.com/ulnswmkk.json", // Heart morph
   heartFilled: "https://cdn.lordicon.com/ulnswmkk.json",

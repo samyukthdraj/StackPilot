@@ -21,7 +21,7 @@ const Section = ({
 export default function TermsPage() {
   return (
     <PremiumPageLayout>
-      <section className="pt-32 pb-20 px-4 md:px-8 max-w-3xl mx-auto relative z-10 text-white">
+      <section className="pt-4 md:pt-32 pb-20 px-4 md:px-8 max-w-3xl mx-auto relative z-10 text-white">
         <div className="text-center mb-14">
           <h1 className="text-4xl md:text-5xl font-black mb-4 text-[#f5f0e8]">
             Terms & Conditions

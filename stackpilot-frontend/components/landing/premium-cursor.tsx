@@ -8,14 +8,43 @@ export function PremiumCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   useEffect(() => {
+    // Detect touch/mobile device — hide cursor entirely
+    const checkTouch = () => {
+      const touchCapable = 
+        window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+        window.innerWidth < 1024 ||
+        ('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0);
+      
+      setIsTouchDevice(touchCapable);
+    };
+
+    // Immediate detection on touch interaction
+    const handleTouchStart = () => {
+      setIsTouchDevice(true);
+      window.removeEventListener("touchstart", handleTouchStart);
+    };
+
+    checkTouch();
+    window.addEventListener("resize", checkTouch);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    
+    return () => {
+      window.removeEventListener("resize", checkTouch);
+      window.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, []);
+
+  useEffect(() => {
     const cursor = cursorRef.current;
     const ring = ringRef.current;
-    if (!cursor || !ring) return;
+    if (!cursor || !ring || isTouchDevice) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const x = e.clientX;
@@ -169,7 +198,10 @@ export function PremiumCursor() {
       document.removeEventListener("mousedown", handleMouseDown);
       observer.disconnect();
     };
-  }, [isAuthenticated, pathname]);
+  }, [isAuthenticated, pathname, isTouchDevice]);
+
+  // Don't render cursor on touch/mobile devices
+  if (isTouchDevice) return null;
 
   return (
     <>

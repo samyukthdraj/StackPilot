@@ -1,0 +1,40 @@
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface Response<T> {
+  success: boolean;
+  timestamp: string;
+  data: T;
+}
+
+import { Request } from 'express';
+
+@Injectable()
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  Response<T>
+> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<Response<T>> {
+    const request = context.switchToHttp().getRequest<Request>();
+    if (request.url.includes('/api/health')) {
+      return next.handle() as Observable<Response<T>>;
+    }
+
+    return next.handle().pipe(
+      map((data: T) => ({
+        success: true,
+        timestamp: new Date().toISOString(),
+        data,
+      })),
+    );
+  }
+}

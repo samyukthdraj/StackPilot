@@ -22,13 +22,15 @@ import {
   BookmarkCheck,
   TrendingUp,
   Clock,
-  Globe
+  Globe,
+  AlertTriangle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { JobFilters } from "./job-filters";
 import { useJobFiltersStore } from "@/lib/store/job-filters-store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FallbackBanner } from "./fallback-banner";
 
 interface Job {
   id: string;
@@ -43,6 +45,7 @@ interface Job {
   requiredSkills: string[];
   experienceRequiredMin?: number;
   experienceRequiredMax?: number;
+  source?: string;
 }
 
 interface SavedJob {
@@ -169,19 +172,19 @@ const JobCard = ({
         </div>
       )}
     </CardContent>
-    <CardFooter className="p-6 pt-0 border-t border-[#2a2a2a]/30 mt-2 flex justify-between items-center bg-[#0d0d0d]/30">
-      <div className="flex items-center text-[11px] text-[#555] font-mono">
+    <CardFooter className="p-4 sm:p-6 pt-0 border-t border-[#2a2a2a]/30 mt-2 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3 bg-[#0d0d0d]/30">
+      <div className="flex items-center text-[10px] sm:text-[11px] text-[#555] font-mono shrink-0">
         <Globe className="w-3 h-3 mr-1" />
-        JSEARCH NETWORK
+        {job.source ? `${job.source.toUpperCase()} NETWORK` : 'JSEARCH NETWORK'}
       </div>
-      <div className="flex gap-4 items-center mt-auto">
+      <div className="flex flex-row flex-nowrap gap-2 items-center justify-end w-full sm:w-auto">
         <Button
           asChild
           variant="outline"
           onClick={(e) => e.stopPropagation()}
-          className="flex-1 bg-transparent hover:bg-white/10 border-[#2a2a2a] hover:border-[#f5c842] text-[#a0a0a0] hover:text-[#f5f0e8] transition-all duration-300 font-bold text-[11px] uppercase tracking-widest h-12 rounded-xl whitespace-nowrap px-0 overflow-hidden"
+          className="bg-transparent hover:bg-white/10 border-[#2a2a2a] hover:border-[#f5c842] text-[#a0a0a0] hover:text-[#f5f0e8] transition-all duration-300 font-bold text-[9px] sm:text-[11px] uppercase tracking-wider whitespace-nowrap h-8 sm:h-10 rounded-lg sm:rounded-xl px-2 sm:px-4 flex-1 sm:flex-none"
         >
-          <Link href={`/jobs/${job.id}`} className="flex items-center justify-center w-full h-full px-6">
+          <Link href={`/jobs/${job.id}`} className="flex items-center justify-center w-full h-full">
             View Details
           </Link>
         </Button>
@@ -189,15 +192,15 @@ const JobCard = ({
           asChild
           variant="outline"
           onClick={(e) => e.stopPropagation()}
-          className="flex-1 bg-transparent border-[#f5c842]/30 hover:border-[#f5c842] text-[#f5c842] hover:bg-[#f5c842]/10 transition-all duration-300 font-bold text-[11px] uppercase tracking-widest h-12 rounded-xl whitespace-nowrap px-0 overflow-hidden shadow-[0_0_15px_rgba(245,200,66,0.05)] hover:shadow-[0_0_25px_rgba(245,200,66,0.2)]"
+          className="bg-transparent border-[#f5c842]/30 hover:border-[#f5c842] text-[#f5c842] hover:bg-[#f5c842]/10 transition-all duration-300 font-bold text-[9px] sm:text-[11px] uppercase tracking-wider whitespace-nowrap h-8 sm:h-10 rounded-lg sm:rounded-xl px-2 sm:px-4 shadow-[0_0_15px_rgba(245,200,66,0.05)] hover:shadow-[0_0_25px_rgba(245,200,66,0.2)] flex-1 sm:flex-none"
         >
           <a 
             href={job.jobUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-full h-full px-6 group"
+            className="flex items-center justify-center w-full h-full group"
           >
-            Direct Apply <ExternalLink className="ml-2 w-3.5 h-3.5 text-[#f5c842] shrink-0 opacity-80 group-hover:opacity-100 transition-opacity" />
+            Direct Apply <ExternalLink className="ml-1.5 w-3 h-3 text-[#f5c842] shrink-0 opacity-80 group-hover:opacity-100 transition-opacity" />
           </a>
         </Button>
       </div>
@@ -219,6 +222,9 @@ export function JobsContainer() {
   const [savedJobsData, setSavedJobsData] = useState<SavedJob[]>([]);
   const [itCount, setItCount] = useState(0);
   const [otherCount, setOtherCount] = useState(0);
+  const [activeProvider, setActiveProvider] = useState<string>("local");
+  const [quotaInfo, setQuotaInfo] = useState<{ remaining: number; resetAt: string | null } | null>(null);
+  const [adzunaQuota, setAdzunaQuota] = useState<{ remaining: number; resetAt: string | null } | null>(null);
   
   // Memoized metadata to keep filters visible
   const [memoizedLocations, setMemoizedLocations] = useState<string[]>([]);
@@ -229,7 +235,15 @@ export function JobsContainer() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get<{ jobs: Job[]; total: number; itCount: number; otherCount: number }>(
+      const response = await apiClient.get<{ 
+        jobs: Job[]; 
+        total: number; 
+        itCount: number; 
+        otherCount: number;
+        activeProvider?: string;
+        quota?: { remaining: number; resetAt: string | null } | null;
+        adzunaQuota?: { remaining: number; resetAt: string | null } | null;
+      }>(
         "/jobs",
         {
           params: {
@@ -252,16 +266,11 @@ export function JobsContainer() {
       setJobs(allJobs);
       setTotalPages(Math.ceil((response.data.total || 0) / JOBS_PER_PAGE));
       
-      const itKeywords = ['developer', 'qa', 'sde', 'software', 'front end', 'backend', 'full stack', 'devops', 'architect', 'programmer', 'coding', 'web', 'app', 'react', 'node', 'python', 'java', 'typescript', 'javascript', 'c#', 'dotnet', 'scientist', 'computing', 'ios', 'android'];
-      const excludeKeywords = ['electrical', 'instrumentation', 'civil', 'mechanical', 'structural', 'construction', 'medical', 'nursing', 'marketing', 'sales'];
-
-      const itJobsCount = allJobs.filter((j: Job) => {
-        const lowTitle = j.title.toLowerCase();
-        return itKeywords.some(kw => lowTitle.includes(kw)) && !excludeKeywords.some(kw => lowTitle.includes(kw));
-      }).length;
-
-      setItCount(itJobsCount);
-      setOtherCount(allJobs.length - itJobsCount);
+      setItCount(response.data.itCount || 0);
+      setOtherCount(response.data.otherCount || 0);
+      setActiveProvider(response.data.activeProvider || "local");
+      setQuotaInfo(response.data.quota || null);
+      setAdzunaQuota(response.data.adzunaQuota || null);
     } catch (err) {
       console.error("Failed to fetch jobs:", err);
       setError("Failed to load jobs. Please try again later.");
@@ -320,8 +329,9 @@ export function JobsContainer() {
     
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
   };
 
   const getJobTypeLabel = (type: string) => {
@@ -411,6 +421,12 @@ export function JobsContainer() {
         )}
       </div>
 
+      <FallbackBanner 
+        activeProvider={activeProvider}
+        jsearchQuota={quotaInfo}
+        adzunaQuota={adzunaQuota}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <aside className="lg:col-span-1">
           <JobFilters 
@@ -423,6 +439,28 @@ export function JobsContainer() {
         </aside>
 
         <div className="lg:col-span-3 space-y-6">
+          {quotaInfo && quotaInfo.remaining <= 0 && activeProvider === "local" && (
+            <div className="bg-[#f5c842]/5 border border-[#f5c842]/20 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+              <div className="w-12 h-12 rounded-full bg-[#f5c842]/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-[#f5c842]" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h4 className="text-[#f5f0e8] font-bold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  System Capacity Note
+                </h4>
+                <p className="text-sm text-[#a0a0a0] mt-1 leading-relaxed">
+                  Real-time JSearch synchronization is currently paused due to high demand. 
+                  Live results will resume on <span className="text-[#f5c842] font-mono font-bold">
+                    {quotaInfo.resetAt ? new Date(quotaInfo.resetAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : "the start of the next cycle"}
+                  </span>.
+                </p>
+              </div>
+              <Badge variant="outline" className="border-[#f5c842]/30 text-[#f5c842] bg-transparent uppercase text-[10px] tracking-widest font-bold">
+                Serving Cached Data
+              </Badge>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-6 rounded-2xl text-center font-bold">
               {error}
@@ -442,21 +480,24 @@ export function JobsContainer() {
             </div>
           ) : viewMode === "explore" ? (
             <Tabs defaultValue="it" className="w-full">
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <TabsList className="bg-transparent border-none p-0 h-auto gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <TabsList className="bg-transparent border-none p-0 h-auto gap-2 sm:gap-4 flex-nowrap flex">
                   <TabsTrigger 
                     value="it" 
-                    className="rounded-xl px-6 py-3 data-[state=active]:bg-[#f5c842] data-[state=active]:text-[#0d0d0d] bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] transition-all"
+                    className="rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-[#f5c842] data-[state=active]:text-[#0d0d0d] bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] transition-all text-xs sm:text-sm whitespace-nowrap"
                   >
-                    Tech Hub <Badge className="ml-2 bg-black/20 text-inherit border-none">{itCount}</Badge>
+                    Tech Hub <Badge className="ml-1 sm:ml-2 bg-black/20 text-inherit border-none">{itJobs.length}</Badge>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="other" 
-                    className="rounded-xl px-6 py-3 data-[state=active]:bg-[#f5c842] data-[state=active]:text-[#0d0d0d] bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] transition-all"
+                    className="rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-[#f5c842] data-[state=active]:text-[#0d0d0d] bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] transition-all text-xs sm:text-sm whitespace-nowrap"
                   >
-                    General Market <Badge className="ml-2 bg-black/20 text-inherit border-none">{otherCount}</Badge>
+                    General <Badge className="ml-1 sm:ml-2 bg-black/20 text-inherit border-none">{otherJobs.length}</Badge>
                   </TabsTrigger>
                 </TabsList>
+                <p className="text-[10px] text-[#555] font-mono hidden sm:block">
+                  *Results per page vary by {activeProvider ? activeProvider.charAt(0).toUpperCase() + activeProvider.slice(1) : 'JSearch'} API
+                </p>
 
                 {totalPages > 1 && (
                   <div className="flex bg-[#1a1a1a] rounded-xl p-1 border border-[#2a2a2a]">

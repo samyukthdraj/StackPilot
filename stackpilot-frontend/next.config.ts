@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone", // Optimized for deployment
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   images: {
-    domains: ["stackpilot-backend.onrender.com"], // Add your backend domain
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "stackpilot-backend.onrender.com",
+      },
+    ],
   },
 };
 

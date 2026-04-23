@@ -22,7 +22,7 @@ export function ResumeHeader({
   onViewPdf,
 }: ResumeHeaderProps) {
   return (
-    <div className="flex items-start justify-between">
+    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
       <div>
         <Link
           href="/resumes"
@@ -36,23 +36,23 @@ export function ResumeHeader({
           />
           Back to Resumes
         </Link>
-        <h1 className="text-3xl font-bold text-[#f5f0e8] font-playfair">{fileName}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#f5f0e8] font-playfair">{fileName}</h1>
         <p className="text-[#a0a0a0] mt-2">
           Uploaded {formatDistanceToNow(new Date(createdAt))} ago • Version{" "}
           {version}
         </p>
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 w-full sm:w-auto">
         <Button
           variant="outline"
           onClick={onViewPdf}
-          className="border-[#2a2a2a] bg-transparent hover:bg-[#1a1a1a] hover:border-[#f5c842] text-[#f5f0e8] hover:text-[#f5c842]"
+          className="flex-1 sm:flex-none border-[#2a2a2a] bg-transparent hover:bg-[#1a1a1a] hover:border-[#f5c842] text-[#f5f0e8] hover:text-[#f5c842]"
         >
           <FileText className="w-4 h-4 mr-2" />
           View PDF
         </Button>
         <Button
-          className="bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none"
+          className="flex-1 sm:flex-none bg-[#f5c842] hover:bg-[#d4a832] text-[#0d0d0d] font-semibold border-none whitespace-nowrap"
           onClick={onFindMatches}
         >
           <LordiconWrapper

@@ -12,6 +12,7 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { LordiconWrapper } from "@/components/shared/lordicon-wrapper";
+import { TruncatedText } from "@/components/shared/truncated-text";
 import { animations } from "@/public/icons/lordicon";
 import { JobMatch, Job } from "@/lib/types/api"; // Added Job type
 import { cn } from "@/lib/utils";
@@ -81,31 +82,19 @@ export function MatchCard({
     <Card className={cn("group hover:shadow-lg transition-all", className)}>
       <CardContent className="p-6">
         {/* Header */}
-        <TooltipProvider>
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1 min-w-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link href={`/jobs/${job?.id}`} className="hover:underline block">
-                    <h3 className="text-lg font-semibold text-navy group-hover:text-[#f5c842] transition-colors line-clamp-1 cursor-help">
-                      {job?.title || "Loading..."}
-                    </h3>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {job?.title}
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-gray-600 mt-1 line-clamp-1 cursor-help">{job?.company}</p>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-[#0d0d0d] border-[#f5c842]/20">
-                  {job?.company}
-                </TooltipContent>
-              </Tooltip>
-            </div>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <Link href={`/jobs/${job?.id}`} className="hover:underline block">
+              <TruncatedText 
+                text={job?.title || "Loading..."} 
+                className="text-lg font-semibold text-navy group-hover:text-[#f5c842] transition-colors" 
+              />
+            </Link>
+            <TruncatedText 
+              text={job?.company || ""} 
+              className="text-gray-600 mt-1" 
+            />
+          </div>
 
           {/* Score Circle */}
           <div className="relative w-16 h-16">
@@ -151,7 +140,6 @@ export function MatchCard({
             </svg>
           </div>
           </div>
-        </TooltipProvider>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -179,22 +167,23 @@ export function MatchCard({
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-600">Experience</p>
-            <p
-              className={cn(
-                "text-sm font-bold uppercase tracking-tighter truncate",
+            <div className={cn(
+                "text-sm font-bold uppercase tracking-tighter w-full",
                 getScoreColor(match.breakdown.experienceScore),
-              )}
-            >
-              {job?.experienceRequiredMin !== undefined && job?.experienceRequiredMin !== null ? (
-                job.experienceRequiredMin === 0 && !job.experienceRequiredMax ? (
-                   "No Exp Required"
+              )}>
+              <TruncatedText 
+                text={job?.experienceRequiredMin !== undefined && job?.experienceRequiredMin !== null ? (
+                  job.experienceRequiredMin === 0 && !job.experienceRequiredMax ? (
+                    "No Exp Required"
+                  ) : (
+                    `${job.experienceRequiredMin}${job.experienceRequiredMax ? `-${job.experienceRequiredMax}` : "+"}yr`
+                  )
                 ) : (
-                   `${job.experienceRequiredMin}${job.experienceRequiredMax ? `-${job.experienceRequiredMax}` : "+"}yr`
-                )
-              ) : (
-                "Not Specified"
-              )}
-            </p>
+                  "Not Specified"
+                )}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 

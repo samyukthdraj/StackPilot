@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,8 @@ const countries = [
 
 
 const timeRanges = [
-  { value: 12, label: "Last 12 hours" },
-  { value: 24, label: "Last 24 hours" },
+  { value: 0.5, label: "Last 12 hours" },
+  { value: 1, label: "Last 24 hours" },
   { value: 7, label: "Last 7 days" },
   { value: 30, label: "Last 30 days" },
 ];
@@ -60,6 +60,30 @@ export function JobFilters({
   const { filters, setFilter, resetFilters, hasActiveFilters } =
     useJobFiltersStore();
   const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Debounced search: local state that syncs to store after delay
+  const [localSearch, setLocalSearch] = useState(filters.search);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Sync local search from store when store changes externally (e.g., reset)
+  useEffect(() => {
+    setLocalSearch(filters.search);
+  }, [filters.search]);
+  
+  const handleSearchChange = (value: string) => {
+    setLocalSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setFilter("search", value);
+    }, 500);
+  };
+  
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const getJobTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -125,9 +149,9 @@ export function JobFilters({
               />
             </div>
             <Input
-              placeholder="React, AI, Cloud..."
-              value={filters.search}
-              onChange={(e) => setFilter("search", e.target.value)}
+              placeholder="software engineer"
+              value={localSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10 bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] focus:border-[#f5c842] rounded-xl h-11"
             />
           </div>
@@ -204,7 +228,7 @@ export function JobFilters({
           <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">Time to Hire</Label>
           <Select
             value={filters.days.toString()}
-            onValueChange={(value) => setFilter("days", parseInt(value))}
+            onValueChange={(value) => setFilter("days", parseFloat(value))}
           >
             <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a2a] text-[#f5f0e8] rounded-xl h-11">
               <SelectValue placeholder="Threshold" />
