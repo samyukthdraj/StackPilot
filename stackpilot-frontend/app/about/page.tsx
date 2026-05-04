@@ -1,6 +1,11 @@
-"use client";
+import { Metadata } from "next";
 import { PremiumPageLayout } from "@/components/landing/premium-page-layout";
 import { Github, Linkedin } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "About StackPilot | Our Mission",
+  description: "Learn about StackPilot's mission to make algorithmic ATS rejection obsolete and give developers an unfair advantage in the job market.",
+};
 
 export default function AboutPage() {
   return (

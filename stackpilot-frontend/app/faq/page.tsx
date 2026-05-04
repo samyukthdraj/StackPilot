@@ -1,5 +1,10 @@
-"use client";
+import { Metadata } from "next";
 import { PremiumPageLayout } from "@/components/landing/premium-page-layout";
+
+export const metadata: Metadata = {
+  title: "FAQ | StackPilot",
+  description: "Common questions about StackPilot's AI resume optimization, ATS scoring accuracy, job sourcing, and data privacy.",
+};
 
 export default function FAQPage() {
   const faqs = [

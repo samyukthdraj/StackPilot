@@ -36,7 +36,15 @@ export const metadata: Metadata = {
     template: "%s | StackPilot"
   },
   description: "Optimize your resume with AI, find perfect job matches, and accelerate your developer career with StackPilot's intelligent career platform.",
-  keywords: ["developer career", "AI resume optimization", "job matching", "ATS scanner", "career intelligence", "tech jobs"],
+  keywords: ["StackPilot", "stack pilot", "stack-pilot", "developer career", "AI resume optimization", "job matching", "ATS scanner", "career intelligence", "tech jobs", "software engineer career"],
+  authors: [{ name: "Samyukth Dharmarajan" }],
+  creator: "Samyukth Dharmarajan",
+  publisher: "StackPilot",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/images/favicon.svg",
@@ -48,15 +56,34 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://stackpilot-jext.onrender.com",
     title: "StackPilot - AI Career Intelligence for Developers",
-    description: "AI-powered career optimization for modern software engineers.",
+    description: "AI-powered career optimization for modern software engineers. Beat the ATS and find your dream job.",
     siteName: "StackPilot",
-    images: ["/images/og-image.png"],
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "StackPilot - AI Career Intelligence",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "StackPilot",
-    description: "Career Intelligence for Modern Developers",
+    title: "StackPilot - Career Intelligence for Modern Developers",
+    description: "AI-powered resume optimization and job matching for developers.",
     images: ["/images/og-image.png"],
+    creator: "@samyukthdraj",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
